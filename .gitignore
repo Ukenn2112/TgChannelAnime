@@ -1,0 +1,5 @@
+__pycache__
+*.session
+config.json
+.DS_Store
+clannel_api.py

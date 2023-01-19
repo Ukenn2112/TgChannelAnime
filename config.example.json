@@ -1,0 +1,19 @@
+{
+    "api_id": 1231231,
+    "api_hash": "7xxxxxxxx",
+    "bot_token": "591xxxxx37:Axxxxxxx25kUiAcY",
+    "admin_list": [
+        123123
+    ],
+    "notice_chat": -123123,
+    "nc_chat_id": 123123,
+    "ani_chat_id": 123123,
+    "save_path": "./",
+    "upload_file_set": true,
+    "rclone_config_name": "xxxx_gd",
+    "max_num": 5,
+    "B_Global_whitelist": [],
+    "Bilibili_whitelist": [],
+    "CR_whitelist": [],
+    "Sentai_whitelist": []
+}
