@@ -4,6 +4,8 @@ import asyncio.subprocess
 import base64
 import logging
 import re
+import zlib
+import os
 import urllib.parse
 
 from telebot.async_telebot import AsyncTeleBot
@@ -47,6 +49,7 @@ async def worker(name):
         volume = queue_item[3]
         platform = queue_item[4]
 
+        crc32 = queue_item[5] if len(queue_item) == 6 else None
 
         season = re.search(r"第(.*)季", season_name)
         if season:
@@ -60,10 +63,26 @@ async def worker(name):
         file_name = f"{season_name} - S{season_num}E{volume} - {platform}.{file_type}"
         try:
             logging.info(f"[file_name: {file_name}] - 开始下载")
-            download(url, f"{global_vars.config['save_path']}/{file_name}")
+            down_file = os.path.join(global_vars.config["save_path"], file_name)
+            for i in range(3):
+                download(url, down_file)
+                logging.info(f"[file_name: {file_name}] - 下载完成")
+                if not crc32: break
+                with open(down_file, "rb") as file:
+                    crc = 0
+                    while True:
+                        data = file.read(1024 * 1024 * 10)
+                        if not data: break
+                        crc = zlib.crc32(data, crc)
+                    if crc == crc32:
+                        logging.info(f"[file_name: {file_name}] - 下载成功: CRC32校验通过")
+                        break
+                    else:
+                        logging.error(f"[file_name: {file_name}] - 下载失败: CRC32校验失败 重试中...")
+                        os.remove(down_file)
             if global_vars.config["upload_file_set"]:
                 logging.info(f"[file_name: {file_name}] - 开始上传")
-                proc = await asyncio.create_subprocess_exec("rclone", "move", f"{global_vars.config['save_path']}/{file_name}",
+                proc = await asyncio.create_subprocess_exec("rclone", "move", down_file,
                                                            f"{global_vars.config['rclone_config_name']}:NC-Raws/{season_name}/{season_str}/",
                                                             "--transfers", "12", stdout=asyncio.subprocess.DEVNULL)
                 await proc.wait()
@@ -90,6 +109,7 @@ async def nc_chat_detecting(update):
         season_name = data.group(1)
         volume = data.group(2)
         platform = data.group(3)
+        crc32 = re.search(r"CRC32：(.*)`", message.text).group(1)
 
         tag_name = re.search(r"\n\n#(.+)\n\n", message.text).group(1)
         if platform != "Baha":
@@ -105,7 +125,7 @@ async def nc_chat_detecting(update):
             else:
                 return logging.error(f"[file_name: {file_name}] - 未知平台: {platform}")
         url = urllib.parse.quote(url, safe=":/?&=").replace("mkv", "zip").replace("mp4", "zip")
-        await queue.put((url, season_name, file_type, volume, platform))
+        await queue.put((url, season_name, file_type, volume, platform, crc32))
 
 @events.register(events.NewMessage(chats=global_vars.config["ani_chat_id"]))
 async def ani_chat_detecting(update):
