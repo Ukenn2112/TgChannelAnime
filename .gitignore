@@ -3,3 +3,5 @@ __pycache__
 config.json
 .DS_Store
 clannel_api.py
+*.session-journal
+run.log
