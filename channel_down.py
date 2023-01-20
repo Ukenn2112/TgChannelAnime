@@ -5,6 +5,7 @@ import base64
 import logging
 import re
 import urllib.parse
+import json
 
 from telebot.async_telebot import AsyncTeleBot
 from telethon import TelegramClient, events
@@ -58,17 +59,29 @@ async def worker(name):
         
         file_name = f"{season_name} - S{season_num}E{volume} - {platform}.{file_type}"
         try:
+            proc = await asyncio.create_subprocess_exec(
+                "rclone", "lsjson", f"{global_vars.config['rclone_config_name']}:NC-Raws", "--dirs-only",
+                stdout=asyncio.subprocess.PIPE)
+            output = await proc.communicate()
+            dirs_list = json.loads(output[0].decode("utf-8"))
+            for dirs in dirs_list:
+                if season_name in dirs["Name"]:
+                    season_name = dirs["Name"]
+                    break
+        except Exception as e:
+            pass
+        try:
             logging.info(f"[file_name: {file_name}] - 开始下载")
             download(url, f"{global_vars.config['save_path']}/{file_name}")
-            if global_vars.config["upload_file_set"]:
-                logging.info(f"[file_name: {file_name}] - 开始上传")
-                proc = await asyncio.create_subprocess_exec("rclone", "move", f"{global_vars.config['save_path']}/{file_name}",
-                                                           f"{global_vars.config['rclone_config_name']}:NC-Raws/{season_name}/{season_str}/",
-                                                            "--transfers", "12", stdout=asyncio.subprocess.DEVNULL)
-                await proc.wait()
-                if proc.returncode == 0:
-                    await bot.send_message(global_vars.config["notice_chat"], f"[#更新提醒]\n - 已上传: {file_name}")
-                    logging.info(f"[file_name: {file_name}] - 已下载并上传成功")
+            logging.info(f"[file_name: {file_name}] - 开始上传")
+            proc = await asyncio.create_subprocess_exec(
+                "rclone", "move", f"{global_vars.config['save_path']}/{file_name}",
+               f"{global_vars.config['rclone_config_name']}:NC-Raws/{season_name}/{season_str}/",
+                "--transfers", "12", stdout=asyncio.subprocess.DEVNULL)
+            await proc.wait()
+            if proc.returncode == 0:
+                await bot.send_message(global_vars.config["notice_chat"], f"[#更新提醒]\n - 已上传: {file_name}")
+                logging.info(f"[file_name: {file_name}] - 已下载并上传成功")
         except Exception as e:
             logging.error(f"[file_name: {file_name}] - 下载或上传失败: {e}")
         finally:
