@@ -2,6 +2,7 @@
     "api_id": 1231231,
     "api_hash": "7xxxxxxxx",
     "bot_token": "591xxxxx37:Axxxxxxx25kUiAcY",
+    "bgm_token": "https://next.bgm.tv/demo/access-token",
     "admin_list": [
         123123
     ],
@@ -11,6 +12,7 @@
     "save_path": "./",
     "rclone_config_name": "xxxx_gd",
     "max_num": 5,
+    "Baha_blacklist": [],
     "B_Global_whitelist": [],
     "Bilibili_whitelist": [],
     "CR_whitelist": [],
