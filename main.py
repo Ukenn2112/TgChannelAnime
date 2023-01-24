@@ -123,6 +123,10 @@ async def nc_chat_detecting(update):
         platform = data.group(3)
 
         tag_name = re.search(r"\n\n#(.+)\n\n", message.text).group(1)
+        for bid in global_vars.config["bgm_compare"]:
+            if bid["tagname"] == tag_name:
+                bgm_id = bid["bgmid"]
+                break
         if platform == "Baha":
             if tag_name in global_vars.config["Baha_blacklist"]:
                 return

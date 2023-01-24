@@ -65,6 +65,18 @@ async def add_white(message: Message, bot: AsyncTeleBot):
         elif data[1] == "del":
             for d in data[2].split("#"):
                 global_vars.config["admin_list"].remove(int(d))
+    elif message.text.startswith("/bgmcom"):
+        if data[1] == "add":
+            for a in data[2].split("#"):
+                d = a.split("/")
+                if len(d) < 2:
+                    return await bot.reply_to(message, "参数错误")
+                global_vars.config["bgm_compare"].append({"tagname": d[0], "bgmid": d[1]})
+        elif data[1] == "del":
+            for d in data[2].split("#"):
+                for i in global_vars.config["bgm_compare"]:
+                    if i["tagname"] == d:
+                        global_vars.config["bgm_compare"].remove(i)
     with open("config.json", "w", encoding="utf-8") as f: json.dump(global_vars.config, f, indent=4, ensure_ascii=False)
     await bot.reply_to(message, (
         "*修改成功 现在名单状况*\n\n"
@@ -73,6 +85,7 @@ async def add_white(message: Message, bot: AsyncTeleBot):
         "*Bilibili 白名单*: \n\n `" + '\n '.join([n['tagname'] for n in global_vars.config['Bilibili_whitelist']]) + "`\n\n"
         "*CR 白名单*: \n\n `" + '\n '.join(global_vars.config['CR_whitelist']) + "`\n\n"
         "*Sentai 白名单*: \n\n `" + '\n '.join(global_vars.config['CR_whitelist']) + "`\n\n"
+        "*BGM 对照*: \n\n `" + '\n '.join([n['tagname']+'/'+n['bgmid'] for n in global_vars.config['bgm_compare']]) + "`\n\n"
         "*admin-list*: \n\n `" + '\n '.join([str(x) for x in global_vars.config['admin_list']]) + "`\n\n"
         ), parse_mode="Markdown")
 
@@ -86,6 +99,7 @@ async def now_white(message: Message, bot: AsyncTeleBot):
         "*Bilibili 白名单*: \n\n `" + '\n '.join([n['tagname'] for n in global_vars.config['Bilibili_whitelist']]) + "`\n\n"
         "*CR 白名单*: \n\n `" + '\n '.join(global_vars.config['CR_whitelist']) + "`\n\n"
         "*Sentai 白名单*: \n\n `" + '\n '.join(global_vars.config['CR_whitelist']) + "`\n\n"
+        "*BGM 对照*: \n\n `" + '\n '.join([n['tagname']+'/'+n['bgmid'] for n in global_vars.config['bgm_compare']]) + "`\n\n"
         "*admin-list*: \n\n `" + '\n '.join([str(x) for x in global_vars.config['admin_list']]) + "`\n\n"
         ), parse_mode="Markdown") 
 
@@ -129,6 +143,11 @@ async def nc_msg_down(message: Message, bot: AsyncTeleBot):
     volume = data.group(2)
     platform = data.group(3)
     url = urllib.parse.quote(url, safe=":/?&=").replace("mkv", "zip").replace("mp4", "zip")
+    tag_name = re.search(r"\n\n#(.+)\n\n", message.html_caption).group(1)
+    for bid in global_vars.config["bgm_compare"]:
+        if bid["tagname"] == tag_name:
+            bgm_id = bid["bgmid"]
+            break
     await bot.reply_to(message, "已加入队列")
     await queue.put((url, season_name, file_type, volume, platform, bgm_id))
 
@@ -140,9 +159,10 @@ async def help_message(message: Message, bot: AsyncTeleBot):
         "命令列表:\n\n"
         "`/baha [add/del] [黑名单]` 添加或删除黑名单 多个以#隔开\n\n"
         "`/b_global [add/del] [白名单]` 添加或删除白名单 多个以#隔开\n\n"
-        "`/bilibili [add/del] [白名单]` 添加需要 BGM ID 使用 如 `大雪海的卡納/366250`\n\n"
+        "`/bilibili [add/del] [白名单/BGM ID]` 添加需要 BGM ID 使用 如 `大雪海的卡納/366250`\n\n"
         "`/cr [add/del] [白名单]` 解释同上\n\n"
         "`/sentai [add/del] [白名单]` 解释同上\n\n"
+        "`/bgmcom [add/del] [白名单/BGM ID]` BGM ID 对照表\n\n"
         "`/add_admin [add/del] [白名单]` 解释同上\n\n"
         "`/now_white` 获取现在的白名单\n\n"
         "`/url <bgmid> <url>` url Ani 的下载链接\n\n"
@@ -153,7 +173,7 @@ async def help_message(message: Message, bot: AsyncTeleBot):
 def bot_register(bot: AsyncTeleBot):
     """Bot register function."""
     bot.register_message_handler(nc_msg_down, chat_types=["private"], content_types=['video'], pass_bot=True)
-    bot.register_message_handler(add_white, commands=["baha", "b_global", "bilibili", "cr", "sentai", "admin"], chat_types=["private"], pass_bot=True)
+    bot.register_message_handler(add_white, commands=["baha", "b_global", "bilibili", "cr", "sentai", "admin", "bgmcom"], chat_types=["private"], pass_bot=True)
     bot.register_message_handler(now_white, commands=["now_white"], chat_types=["private"], pass_bot=True)
     bot.register_message_handler(url_down, commands=["url"], chat_types=["private"], pass_bot=True)
     bot.register_message_handler(help_message, commands=["help"], chat_types=["private"], pass_bot=True)

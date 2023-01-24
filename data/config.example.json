@@ -12,6 +12,7 @@
     "save_path": "./",
     "rclone_config_name": "xxxx_gd",
     "max_num": 5,
+    "bgm_compare": [],
     "Baha_blacklist": [],
     "B_Global_whitelist": [],
     "Bilibili_whitelist": [],
