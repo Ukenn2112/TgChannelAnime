@@ -67,15 +67,16 @@ def subject_nfo(subject_id, tmdb_d: str = None) -> dict:
         #         x['thumb'] = person['images']['large']
         #     tvshow_json['tvshow']['actor'].append(x)
     for character in data['characters']:
-        c = {
-                'name': '/'.join([actor['name'] for actor in character['actors']]),
-                'role': character['name'], 
-                'type': 'Actor', 
-                'profile': 'https://bgm.tv/character/' + str(character['id'])
-            }
-        if character['images']['large']:
-            c['thumb'] = character['images']['large']
-        tvshow_json['tvshow']['actor'].append(c)
+        for actor in character['actors']:
+            c = {
+                    'name': actor['name'], 
+                    'role': character['name'], 
+                    'type': 'Actor', 
+                    'profile': 'https://bgm.tv/person/' + str(actor['id'])
+                }
+            if actor['images']['large']:
+                c['thumb'] = actor['images']['large']
+            tvshow_json['tvshow']['actor'].append(c)
     clearlogo_img = None
     poster_img = (s.get(data['images']['large']).content, data['images']['large'].split('.')[-1])
     if tmdb_d:
