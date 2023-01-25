@@ -136,7 +136,7 @@ async def nc_msg_down(message: Message, bot: AsyncTeleBot):
 
     url = "https://nc.raws.dev" + base64.b64decode(url.group(1).split("/")[-1].replace("_", "/").replace("-", "+")).decode("utf-8")
     bgm_id = bgm_id.group(1)
-    tmdb_d = re.search(r'https?:\/\/www\.themoviedb\.org\/((tv|movie)\/.*)">TMDB', message.html_caption)
+    tmdb_d = re.search(r'https?:\/\/www\.themoviedb\.org\/((tv|movie)\/[0-9]+)', message.html_caption)
     if tmdb_d: tmdb_d = tmdb_d.group(1)
     file_name = url.split("/")[-1]
     file_type = file_name.split(".")[-1]
