@@ -77,7 +77,7 @@ async def add_white(message: Message, bot: AsyncTeleBot):
                 for i in global_vars.config["bgm_compare"]:
                     if i["tagname"] == d:
                         global_vars.config["bgm_compare"].remove(i)
-    with open("config.json", "w", encoding="utf-8") as f: json.dump(global_vars.config, f, indent=4, ensure_ascii=False)
+    with open("data/config.json", "w", encoding="utf-8") as f: json.dump(global_vars.config, f, indent=4, ensure_ascii=False)
     await bot.reply_to(message, (
         "*修改成功 现在名单状况*\n\n"
         "*Baha 黑名单*: \n\n `" + '\n '.join(global_vars.config['Baha_blacklist']) + "`\n\n"
