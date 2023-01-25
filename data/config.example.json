@@ -3,6 +3,7 @@
     "api_hash": "7xxxxxxxx",
     "bot_token": "591xxxxx37:Axxxxxxx25kUiAcY",
     "bgm_token": "https://next.bgm.tv/demo/access-token",
+    "tmdb_token": "xxx",
     "admin_list": [
         123123
     ],

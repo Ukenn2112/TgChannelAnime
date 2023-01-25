@@ -51,6 +51,9 @@ async def worker(name):
         volume = queue_item[3]
         platform = queue_item[4]
         bgm_id = queue_item[5]
+        tmdb_d = None
+        if len(queue_item) == 7:
+            tmdb_d = queue_item[6]
 
         season = re.search(r"第(.*)季", season_name)
         if season:
@@ -58,7 +61,7 @@ async def worker(name):
         file_name = f"{season_name} - S01E{volume} - {platform}"
         if not os.path.exists(file_name): os.mkdir(file_name)
 
-        subject_data = subject_nfo(bgm_id)
+        subject_data = subject_nfo(bgm_id, tmdb_d)
         folder_name = subject_data['originalTitle']
         season = re.search(r"Season(.*)", season_name)
         if season:
@@ -115,6 +118,8 @@ async def nc_chat_detecting(update):
 
         url = "https://nc.raws.dev" + base64.b64decode(url.group(1).split("/")[-1].replace("_", "/").replace("-", "+")).decode("utf-8")
         bgm_id = bgm_id.group(1)
+        tmdb_d = re.search(r"\[\*\*TMDB\]\(https?:\/\/www\.themoviedb\.org\/((tv|movie)\/.*?)\)", message.text)
+        if tmdb_d: tmdb_d = tmdb_d.group(1)
         file_name = url.split("/")[-1]
         file_type = file_name.split(".")[-1]
         data = re.search(r"\[NC-Raws\] (.+) - (.+) \((.+) ([0-9]+x[0-9]+).+\)", file_name)
@@ -142,7 +147,7 @@ async def nc_chat_detecting(update):
         else:
             return logging.error(f"[file_name: {file_name}] - 未知平台: {platform}")
         url = urllib.parse.quote(url, safe=":/?&=").replace("mkv", "zip").replace("mp4", "zip")
-        await queue.put((url, season_name, file_type, volume, platform, bgm_id))
+        await queue.put((url, season_name, file_type, volume, platform, bgm_id, tmdb_d))
 
 
 @events.register(events.NewMessage(chats=global_vars.config["ani_chat_id"]))
