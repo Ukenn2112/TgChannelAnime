@@ -15,7 +15,7 @@ from telethon import TelegramClient, events
 import utils.global_vars as global_vars
 from bot import bot_register
 from utils.download import download
-from utils.bgm_nfo import subject_nfo, episode_nfo
+from utils.bgm_nfo import subject_nfo, episode_nfo, subject_name
 
 logging.getLogger().setLevel(logging.INFO)
 logging.basicConfig(
@@ -61,11 +61,10 @@ async def worker(name):
         file_name = f"{season_name} - S01E{volume} - {platform}"
         if not os.path.exists(file_name): os.mkdir(file_name)
 
-        subject_data = subject_nfo(bgm_id, tmdb_d)
-        folder_name = subject_data['originalTitle']
+        folder_name = subject_name(bgm_id)
         season = re.search(r"Season(.*)", season_name)
         if season:
-            folder_name = subject_data['originalTitle'].replace(season.group(0), "").strip()
+            folder_name = folder_name.replace(season.group(0), "").strip()
 
         episode_data = episode_nfo(bgm_id, volume)
         if episode_data:
@@ -80,6 +79,7 @@ async def worker(name):
             dirs_list = json.loads(output[0].decode("utf-8"))
             dirs = [dirs["Name"] for dirs in dirs_list if folder_name in dirs["Name"]]
             if not dirs:
+                subject_data = subject_nfo(bgm_id, tmdb_d)
                 with open(f"{global_vars.config['save_path']}/{file_name}/tvshow.nfo", "w", encoding="utf-8") as t:
                     t.write(subject_data['tvshowNfo'])
                     t.close()

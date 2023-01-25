@@ -126,7 +126,6 @@ def subject_nfo(subject_id, tmdb_d: str = None) -> dict:
     season_xml = '<?xml version="1.0" encoding="utf-8" standalone="yes"?>\n'
     season_xml += xmltodict.unparse(season_json, encoding='UTF-8', pretty=True, indent="  ", full_document=False)
     return {
-        "originalTitle": data['name'],
         "tvshowNfo": tvshow_xml,
         "seasonNfo": season_xml,
         "posterImg": poster_img,
@@ -186,6 +185,12 @@ def get_bgm_subject(subject_id) -> dict:
     r.raise_for_status()
     data['characters'] = r.json()
     return data
+
+def subject_name(subject_id) -> str:
+    """请求 Bangumi API 获取番剧信息"""
+    r = s.get(f'https://api.bgm.tv/v0/subjects/{subject_id}')
+    r.raise_for_status()
+    return r.json()['name']
 
 def get_tmdb_images(tmdb_id, _type = 'tv') -> dict:
     """请求 TMDB API 获取剧集海报"""
