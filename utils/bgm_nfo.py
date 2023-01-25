@@ -101,6 +101,8 @@ def subject_nfo(subject_id, tmdb_d: str = None) -> dict:
                         "@aspect": "clearlogo",
                         "#text": 'https://image.tmdb.org/t/p/original' + tmdb_imgs['logos'][0]['file_path'],
                     })
+    else:
+         tvshow_json['tvshow']['fanart']['thumb'] = [data['images']['large']]
     tvshow_xml = '<?xml version="1.0" encoding="utf-8" standalone="yes"?>\n'
     tvshow_xml += xmltodict.unparse(tvshow_json, encoding='UTF-8', pretty=True, indent="  ", full_document=False)
     season_json = {
