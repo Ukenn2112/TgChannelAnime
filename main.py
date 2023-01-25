@@ -86,6 +86,16 @@ async def worker(name):
                 with open(f"{global_vars.config['save_path']}/{file_name}/season.nfo", "w", encoding="utf-8") as s:
                     s.write(subject_data['seasonNfo'])
                     s.close()
+                with open(f"{global_vars.config['save_path']}/{file_name}/poster.{subject_data['posterImg'][1]}", "wb") as f:
+                    f.write(subject_data['posterImg'][0])
+                    f.close()
+                with open(f"{global_vars.config['save_path']}/{file_name}/fanart.{subject_data['fanartImg'][1]}", "wb") as f:
+                    f.write(subject_data['fanartImg'][0])
+                    f.close()
+                if subject_data['clearlogoImg']:
+                    with open(f"{global_vars.config['save_path']}/{file_name}/clearlogo.{subject_data['clearlogoImg'][1]}", "wb") as f:
+                        f.write(subject_data['clearlogoImg'][0])
+                        f.close()
         except Exception as e:
             pass
         try:

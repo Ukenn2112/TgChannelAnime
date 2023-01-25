@@ -76,6 +76,8 @@ def subject_nfo(subject_id, tmdb_d: str = None) -> dict:
         if character['images']['large']:
             c['thumb'] = character['images']['large']
         tvshow_json['tvshow']['actor'].append(c)
+    clearlogo_img = None
+    poster_img = (s.get(data['images']['large']).content, data['images']['large'].split('.')[-1])
     if tmdb_d:
         tmdb_d: list = tmdb_d.split('/')
         tmdb_imgs = get_tmdb_images(tmdb_d[1], tmdb_d[0])
@@ -86,6 +88,7 @@ def subject_nfo(subject_id, tmdb_d: str = None) -> dict:
                         "@aspect": "landscape",
                         "#text": 'https://image.tmdb.org/t/p/original/' + tmdb_imgs['backdrops'][0]['file_path'],
                     })
+                fanart_img = (requests.get('https://image.tmdb.org/t/p/original/' + tmdb_imgs['backdrops'][0]['file_path']).content, tmdb_imgs['backdrops'][0]['file_path'].split('.')[-1])
             if tmdb_imgs['logos']:
                 _logo = False
                 for logo in tmdb_imgs['logos']:
@@ -94,6 +97,7 @@ def subject_nfo(subject_id, tmdb_d: str = None) -> dict:
                             "@aspect": "clearlogo",
                             "#text": 'https://image.tmdb.org/t/p/original' + logo['file_path'],
                         })
+                        clearlogo_img = (requests.get('https://image.tmdb.org/t/p/original' + logo['file_path']).content, logo['file_path'].split('.')[-1])
                         _logo = True
                         break
                 if not _logo:
@@ -101,8 +105,10 @@ def subject_nfo(subject_id, tmdb_d: str = None) -> dict:
                         "@aspect": "clearlogo",
                         "#text": 'https://image.tmdb.org/t/p/original' + tmdb_imgs['logos'][0]['file_path'],
                     })
+                    clearlogo_img = (requests.get('https://image.tmdb.org/t/p/original' + tmdb_imgs['logos'][0]['file_path']).content, tmdb_imgs['logos'][0]['file_path'].split('.')[-1])
     else:
          tvshow_json['tvshow']['fanart']['thumb'] = [data['images']['large']]
+         fanart_img = poster_img
     tvshow_xml = '<?xml version="1.0" encoding="utf-8" standalone="yes"?>\n'
     tvshow_xml += xmltodict.unparse(tvshow_json, encoding='UTF-8', pretty=True, indent="  ", full_document=False)
     season_json = {
@@ -122,6 +128,9 @@ def subject_nfo(subject_id, tmdb_d: str = None) -> dict:
         "originalTitle": data['name'],
         "tvshowNfo": tvshow_xml,
         "seasonNfo": season_xml,
+        "posterImg": poster_img,
+        "fanartImg": fanart_img,
+        "clearlogoImg": clearlogo_img,
     }
 
 
