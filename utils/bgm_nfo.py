@@ -1,13 +1,13 @@
-import xmltodict
-import requests
 import cairosvg
+import requests
+import xmltodict
 
-import utils.global_vars as global_vars
+from utils.global_vars import config
 
 s = requests.Session()
 s.headers = {
     'User-Agent':'Ukenn/Bangumi2NFO',
-    'Authorization': 'Bearer ' + global_vars.config['bgm_token']
+    'Authorization': 'Bearer ' + config['bgm_token']
 }
 
 def subject_nfo(subject_id, tmdb_d: str = None) -> dict:
@@ -210,13 +210,13 @@ def get_tmdb_subject(tmdb_id, _type = 'tv') -> dict:
     """请求 TMDB API 获取番剧信息"""
     r = requests.get(
         f'https://api.themoviedb.org/3/{_type}/{tmdb_id}',
-        params = {'api_key': global_vars.config['tmdb_token'], 'language': 'zh-CN'}
+        params = {'api_key': config['tmdb_token'], 'language': 'zh-CN'}
         )
     r.raise_for_status()
     data = r.json()
     r = requests.get(
         f'https://api.themoviedb.org/3/{_type}/{tmdb_id}/content_ratings',
-        params = {'api_key': global_vars.config['tmdb_token']}
+        params = {'api_key': config['tmdb_token']}
         )
     r.raise_for_status()
     data['content_ratings'] = r.json()
@@ -226,7 +226,7 @@ def get_tmdb_images(tmdb_id, _type = 'tv') -> dict:
     """请求 TMDB API 获取剧集海报"""
     r = requests.get(
         f'https://api.themoviedb.org/3/{_type}/{tmdb_id}/images',
-        params = {'api_key': global_vars.config['tmdb_token']}
+        params = {'api_key': config['tmdb_token']}
         )
     r.raise_for_status()
     return r.json()
