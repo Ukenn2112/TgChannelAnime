@@ -11,7 +11,7 @@ async def help_message(message: Message, bot: AsyncTeleBot):
         "`/cr [add/del] [白名单]` 解释同上\n\n"
         "`/sentai [add/del] [白名单]` 解释同上\n\n"
         "`/bgmcom [add/del] [白名单/BGM ID]` BGM ID 对照表\n\n"
-        "`/add_admin [add/del] [白名单]` 解释同上\n\n"
+        "`/admin [add/del] [白名单]` 解释同上\n\n"
         "`/now_white` 获取现在的白名单\n\n"
         "`/url <bgmid> <url>` url Ani 的下载链接\n\n"
         "下载 NC-Raws 的视频直接转发频道消息即可\n\n"

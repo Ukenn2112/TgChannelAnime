@@ -73,13 +73,13 @@ async def add_white(message: Message, bot: AsyncTeleBot):
         json.dump(config, f, indent=4, ensure_ascii=False)
     await bot.reply_to(message, (
         "*修改成功 现在名单状况*\n\n"
-        "*Baha 黑名单*: \n\n `" + '\n '.join(config['Baha_blacklist']) + "`\n\n"
-        "*B-Global 白名单*: \n\n `" + '\n '.join(config['B_Global_whitelist']) + "`\n\n"
-        "*Bilibili 白名单*: \n\n `" + '\n '.join([n['tagname'] for n in config['Bilibili_whitelist']]) + "`\n\n"
-        "*CR 白名单*: \n\n `" + '\n '.join(config['CR_whitelist']) + "`\n\n"
-        "*Sentai 白名单*: \n\n `" + '\n '.join(config['CR_whitelist']) + "`\n\n"
-        "*BGM 对照*: \n\n `" + '\n '.join([n['tagname']+'/'+n['bgmid'] for n in config['bgm_compare']]) + "`\n\n"
-        "*admin-list*: \n\n `" + '\n '.join([str(x) for x in config['admin_list']]) + "`\n\n"
+        "*Baha 黑名单*: \n\n`" + '\n'.join(config['Baha_blacklist']) + "`\n\n"
+        "*B-Global 白名单*: \n\n`" + '\n'.join(config['B_Global_whitelist']) + "`\n\n"
+        "*Bilibili 白名单*: \n\n`" + '\n'.join([n['tagname'] for n in config['Bilibili_whitelist']]) + "`\n\n"
+        "*CR 白名单*: \n\n`" + '\n'.join(config['CR_whitelist']) + "`\n\n"
+        "*Sentai 白名单*: \n\n`" + '\n'.join(config['CR_whitelist']) + "`\n\n"
+        "*BGM 对照*: \n\n`" + '\n'.join([n['tagname']+'/'+n['bgmid'] for n in config['bgm_compare']]) + "`\n\n"
+        "*admin-list*: \n\n`" + '\n'.join([str(x) for x in config['admin_list']]) + "`\n\n"
         ), parse_mode="Markdown")
 
 
@@ -87,11 +87,11 @@ async def now_white(message: Message, bot: AsyncTeleBot):
     if message.from_user.id not in config["admin_list"]:
         return
     await bot.reply_to(message, (
-        "*Baha 黑名单*: \n\n `" + '\n '.join(config['Baha_blacklist']) + "`\n\n"
-        "*B-Global 白名单*: \n\n `" + '\n '.join(config['B_Global_whitelist']) + "`\n\n"
-        "*Bilibili 白名单*: \n\n `" + '\n '.join([n['tagname'] for n in config['Bilibili_whitelist']]) + "`\n\n"
+        "*Baha 黑名单*: \n\n`" + '\n'.join(config['Baha_blacklist']) + "`\n\n"
+        "*B-Global 白名单*: \n\n`" + '\n'.join(config['B_Global_whitelist']) + "`\n\n"
+        "*Bilibili 白名单*: \n\n`" + '\n'.join([n['tagname'] for n in config['Bilibili_whitelist']]) + "`\n\n"
         "*CR 白名单*: \n\n `" + '\n '.join(config['CR_whitelist']) + "`\n\n"
-        "*Sentai 白名单*: \n\n `" + '\n '.join(config['CR_whitelist']) + "`\n\n"
-        "*BGM 对照*: \n\n `" + '\n '.join([n['tagname']+'/'+n['bgmid'] for n in config['bgm_compare']]) + "`\n\n"
-        "*admin-list*: \n\n `" + '\n '.join([str(x) for x in config['admin_list']]) + "`\n\n"
+        "*Sentai 白名单*: \n\n`" + '\n'.join(config['CR_whitelist']) + "`\n\n"
+        "*BGM 对照*: \n\n`" + '\n'.join([n['tagname']+'/'+n['bgmid'] for n in config['bgm_compare']]) + "`\n\n"
+        "*admin-list*: \n\n`" + '\n'.join([str(x) for x in config['admin_list']]) + "`\n\n"
         ), parse_mode="Markdown") 
