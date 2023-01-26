@@ -12,8 +12,8 @@ s.headers = {
 def subject_nfo(subject_id, tmdb_d: str = None) -> dict:
     """Bangumi Subject ID 生成 NFO 内容
     :param subject_id: Bangumi Subject ID
-    :return: NFO 内容  `{"originalTitle": "原始标题", "tvshowNfo": "tvshow nfo xml", "seasonNfo": "season nfo xml"}`
-    :rtype: `dict`  `{"originalTitle": str, "tvshowNfo": str, "seasonNfo": str}`
+    :return: NFO 内容 \n`{"tvshowNfo": "tvshow nfo xml", "seasonNfo": "season nfo xml", "posterImg": ("poster image", "file_type"), "clearlogoImg": ("clearlogo image", "file_type"), "fanartImg": ("fanart image", "file_type")}`
+    :rtype: `dict` \n`{"tvshowNfo": str, "seasonNfo": str , "posterImg": (bytes, str), "clearlogoImg": (bytes, str), "fanartImg": (bytes, str)}`
     """
     data = get_bgm_subject(subject_id)
     tvshow_json = {
@@ -28,6 +28,11 @@ def subject_nfo(subject_id, tmdb_d: str = None) -> dict:
             "credits": [],
             "rating": data['rating']['score'],
             "year": data['date'][:4],
+            "runtime": 24,
+            "genre": [],
+            "studio": [],
+            "mpaa": [],
+            "status": '',
             "premiered": data['date'],
             "releasedate": data['date'],
             "tag": [tag['name'] for tag in data['tags'][:9]],
@@ -81,32 +86,38 @@ def subject_nfo(subject_id, tmdb_d: str = None) -> dict:
     poster_img = (s.get(data['images']['large']).content, data['images']['large'].split('.')[-1])
     if tmdb_d:
         tmdb_d: list = tmdb_d.split('/')
+        tmdb_data = get_tmdb_subject(tmdb_d[1], tmdb_d[0])
+        tvshow_json['tvshow']['runtime'] = tmdb_data['episode_run_time'][0]
+        tvshow_json['tvshow']['genre'] = [g['name'] for g in tmdb_data['genres'][:3]]
+        tvshow_json['tvshow']['studio'] = [s['name'] for s in tmdb_data['production_companies']]
+        tvshow_json['tvshow']['mpaa'] = [r['rating'] for r in tmdb_data['content_ratings']['results'] if r['iso_3166_1'] == 'US'] or tmdb_data['content_ratings']['results'][0]['rating']
+        tvshow_json['tvshow']['status'] = 'Continuing' if tmdb_data['status'] == 'Returning Series' else tmdb_data['status']
+
         tmdb_imgs = get_tmdb_images(tmdb_d[1], tmdb_d[0])
-        if tmdb_imgs:
-            if tmdb_imgs['backdrops']:
-                tvshow_json['tvshow']['fanart']['thumb'] = ['https://image.tmdb.org/t/p/original' + img['file_path'] for img in tmdb_imgs['backdrops'] if not img['iso_639_1']]
-                tvshow_json['tvshow']['thumb'].append({
-                        "@aspect": "landscape",
-                        "#text": 'https://image.tmdb.org/t/p/original/' + tmdb_imgs['backdrops'][0]['file_path'],
-                    })
-                fanart_img = (requests.get('https://image.tmdb.org/t/p/original/' + tmdb_imgs['backdrops'][0]['file_path']).content, tmdb_imgs['backdrops'][0]['file_path'].split('.')[-1])
-            if tmdb_imgs['logos']:
-                _logo = False
-                for logo in tmdb_imgs['logos']:
-                    if logo['iso_639_1'] == 'ja':
-                        tvshow_json['tvshow']['thumb'].append({
-                            "@aspect": "clearlogo",
-                            "#text": 'https://image.tmdb.org/t/p/original' + logo['file_path'],
-                        })
-                        clearlogo_img = (requests.get('https://image.tmdb.org/t/p/original' + logo['file_path']).content, logo['file_path'].split('.')[-1])
-                        _logo = True
-                        break
-                if not _logo:
+        if tmdb_imgs['backdrops']:
+            tvshow_json['tvshow']['fanart']['thumb'] = ['https://image.tmdb.org/t/p/original' + img['file_path'] for img in tmdb_imgs['backdrops'] if not img['iso_639_1']]
+            tvshow_json['tvshow']['thumb'].append({
+                    "@aspect": "landscape",
+                    "#text": 'https://image.tmdb.org/t/p/original/' + tmdb_imgs['backdrops'][0]['file_path'],
+                })
+            fanart_img = (requests.get('https://image.tmdb.org/t/p/original/' + tmdb_imgs['backdrops'][0]['file_path']).content, tmdb_imgs['backdrops'][0]['file_path'].split('.')[-1])
+        if tmdb_imgs['logos']:
+            _logo = False
+            for logo in tmdb_imgs['logos']:
+                if logo['iso_639_1'] == 'ja':
                     tvshow_json['tvshow']['thumb'].append({
                         "@aspect": "clearlogo",
-                        "#text": 'https://image.tmdb.org/t/p/original' + tmdb_imgs['logos'][0]['file_path'],
+                        "#text": 'https://image.tmdb.org/t/p/original' + logo['file_path'],
                     })
-                    clearlogo_img = (requests.get('https://image.tmdb.org/t/p/original' + tmdb_imgs['logos'][0]['file_path']).content, tmdb_imgs['logos'][0]['file_path'].split('.')[-1])
+                    clearlogo_img = (requests.get('https://image.tmdb.org/t/p/original' + logo['file_path']).content, logo['file_path'].split('.')[-1])
+                    _logo = True
+                    break
+            if not _logo:
+                tvshow_json['tvshow']['thumb'].append({
+                    "@aspect": "clearlogo",
+                    "#text": 'https://image.tmdb.org/t/p/original' + tmdb_imgs['logos'][0]['file_path'],
+                })
+                clearlogo_img = (requests.get('https://image.tmdb.org/t/p/original' + tmdb_imgs['logos'][0]['file_path']).content, tmdb_imgs['logos'][0]['file_path'].split('.')[-1])
     else:
          tvshow_json['tvshow']['fanart']['thumb'] = [data['images']['large']]
          fanart_img = poster_img
@@ -191,6 +202,22 @@ def subject_name(subject_id) -> str:
     r = s.get(f'https://api.bgm.tv/v0/subjects/{subject_id}')
     r.raise_for_status()
     return r.json()['name']
+
+def get_tmdb_subject(tmdb_id, _type = 'tv') -> dict:
+    """请求 TMDB API 获取番剧信息"""
+    r = requests.get(
+        f'https://api.themoviedb.org/3/{_type}/{tmdb_id}',
+        params = {'api_key': global_vars.config['tmdb_token'], 'language': 'zh-CN'}
+        )
+    r.raise_for_status()
+    data = r.json()
+    r = requests.get(
+        f'https://api.themoviedb.org/3/{_type}/{tmdb_id}/content_ratings',
+        params = {'api_key': global_vars.config['tmdb_token']}
+        )
+    r.raise_for_status()
+    data['content_ratings'] = r.json()
+    return data
 
 def get_tmdb_images(tmdb_id, _type = 'tv') -> dict:
     """请求 TMDB API 获取剧集海报"""
