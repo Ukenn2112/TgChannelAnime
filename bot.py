@@ -2,12 +2,15 @@ import asyncio
 import base64
 import json
 import re
+import shutil
+import os
 import urllib.parse
 
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import Message
 
 import utils.global_vars as global_vars
+from utils.bgm_nfo import subject_nfo, subject_name
 
 queue: asyncio.Queue = global_vars.queue
 
@@ -108,7 +111,9 @@ async def url_down(message: Message, bot: AsyncTeleBot):
     if message.from_user.id not in global_vars.config["admin_list"]:
         return
     data = message.text.split(" ")
-    if len(data) < 4 and not data[1].isdecimal():
+    if len(data) < 4:
+        return await bot.reply_to(message, "参数错误")
+    elif not data[1].isdecimal():
         return await bot.reply_to(message, "参数错误")
     bgm_id = data[1]
     if re.search(r"(resources\.ani\.rip)", data[2]):
@@ -153,6 +158,52 @@ async def nc_msg_down(message: Message, bot: AsyncTeleBot):
     await bot.reply_to(message, "已加入队列")
     await queue.put((url, season_name, file_type, volume, platform, bgm_id, tmdb_d))
 
+async def re_subject_nfo(message: Message, bot: AsyncTeleBot):
+    if message.from_user.id not in global_vars.config["admin_list"]:
+        return
+    data = message.text.split(" ")
+    if len(data) < 4:
+        return await bot.reply_to(message, "参数错误")
+    elif not data[1].isdecimal():
+        return await bot.reply_to(message, "参数错误")
+    bgm_id = data[1]
+    tmdb_id = data[2]
+    tmdb_type = data[3]
+
+    folder_name = subject_name(bgm_id)
+    season = re.search(r"Season(.*)", folder_name)
+    if season: folder_name = folder_name.replace(season.group(0), "").strip()
+    if not os.path.exists(f"{folder_name}_nfo"): os.mkdir(f"{folder_name}_nfo")
+
+    subject_data = subject_nfo(bgm_id, tmdb_type + '/' + tmdb_id)
+    with open(f"{global_vars.config['save_path']}/{folder_name}_nfo/tvshow.nfo", "w", encoding="utf-8") as t:
+        t.write(subject_data['tvshowNfo'])
+        t.close()
+    with open(f"{global_vars.config['save_path']}/{folder_name}_nfo/season.nfo", "w", encoding="utf-8") as s:
+        s.write(subject_data['seasonNfo'])
+        s.close()
+    with open(f"{global_vars.config['save_path']}/{folder_name}_nfo/poster.{subject_data['posterImg'][1]}", "wb") as f:
+        f.write(subject_data['posterImg'][0])
+        f.close()
+    with open(f"{global_vars.config['save_path']}/{folder_name}_nfo/fanart.{subject_data['fanartImg'][1]}", "wb") as f:
+        f.write(subject_data['fanartImg'][0])
+        f.close()
+    if subject_data['clearlogoImg']:
+        with open(f"{global_vars.config['save_path']}/{folder_name}_nfo/clearlogo.{subject_data['clearlogoImg'][1]}", "wb") as f:
+            f.write(subject_data['clearlogoImg'][0])
+            f.close()
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            "rclone", "move", f"{global_vars.config['save_path']}/{folder_name}_nfo/",
+            f"{global_vars.config['rclone_config_name']}:NC-Raws/{folder_name}/",
+            "--transfers", "12", stdout=asyncio.subprocess.DEVNULL)
+        await proc.wait()
+        if proc.returncode == 0:
+             await bot.reply_to(message, "已重新生成并上传")
+    except Exception as e:
+        await bot.reply_to(message, f"上传失败: {e}")
+    finally:
+        shutil.rmtree(f"{global_vars.config['save_path']}/{folder_name}_nfo")
 
 async def help_message(message: Message, bot: AsyncTeleBot):
     if message.from_user.id not in global_vars.config["admin_list"]:
@@ -169,6 +220,7 @@ async def help_message(message: Message, bot: AsyncTeleBot):
         "`/now_white` 获取现在的白名单\n\n"
         "`/url <bgmid> <url>` url Ani 的下载链接\n\n"
         "下载 NC-Raws 的视频直接转发频道消息即可\n\n"
+        "`/re_nfo <bgmid> <tmdbid> [tv/movie]` 重新生成剧集 NFO\n\n"
         "`/help 本帮助`\n\n"
         ), parse_mode="Markdown")
 
@@ -179,3 +231,4 @@ def bot_register(bot: AsyncTeleBot):
     bot.register_message_handler(now_white, commands=["now_white"], chat_types=["private"], pass_bot=True)
     bot.register_message_handler(url_down, commands=["url"], chat_types=["private"], pass_bot=True)
     bot.register_message_handler(help_message, commands=["help"], chat_types=["private"], pass_bot=True)
+    bot.register_message_handler(re_subject_nfo, commands=["re_nfo"], chat_types=["private"], pass_bot=True)

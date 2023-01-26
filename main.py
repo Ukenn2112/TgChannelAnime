@@ -59,10 +59,11 @@ async def worker(name):
         if season:
             season_name = season_name.replace(season.group(0), "").strip()
         file_name = f"{season_name} - S01E{volume} - {platform}"
-        if not os.path.exists(file_name): os.mkdir(file_name)
+        if not os.path.exists(global_vars.config['save_path'] + file_name):
+            os.mkdir(global_vars.config['save_path'] + file_name)
 
         folder_name = subject_name(bgm_id)
-        season = re.search(r"Season(.*)", season_name)
+        season = re.search(r"Season(.*)", folder_name)
         if season:
             folder_name = folder_name.replace(season.group(0), "").strip()
 
