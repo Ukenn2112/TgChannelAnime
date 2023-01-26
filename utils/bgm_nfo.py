@@ -1,5 +1,6 @@
 import xmltodict
 import requests
+import cairosvg
 
 import utils.global_vars as global_vars
 
@@ -118,6 +119,8 @@ def subject_nfo(subject_id, tmdb_d: str = None) -> dict:
                     "#text": 'https://image.tmdb.org/t/p/original' + tmdb_imgs['logos'][0]['file_path'],
                 })
                 clearlogo_img = (requests.get('https://image.tmdb.org/t/p/original' + tmdb_imgs['logos'][0]['file_path']).content, tmdb_imgs['logos'][0]['file_path'].split('.')[-1])
+            if clearlogo_img[1] == 'svg':
+                clearlogo_img = (cairosvg.svg2png(bytestring=clearlogo_img[0]), 'png')
     else:
          tvshow_json['tvshow']['fanart']['thumb'] = [data['images']['large']]
          fanart_img = poster_img
