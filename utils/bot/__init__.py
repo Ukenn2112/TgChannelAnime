@@ -8,6 +8,7 @@ from .help import help_message
 from .list import add_white, now_white
 from .renfo import re_subject_nfo
 from .sub import file_sub, send_sub
+from .subscribe import subscribe
 
 
 def bot_register(bot: AsyncTeleBot):
@@ -21,6 +22,7 @@ def bot_register(bot: AsyncTeleBot):
     bot.register_message_handler(ani_down, commands=["url"], chat_types=["private"], pass_bot=True, is_admin=True)
     bot.register_message_handler(help_message, commands=["help"], chat_types=["private"], pass_bot=True, is_admin=True)
     bot.register_message_handler(re_subject_nfo, commands=["re_nfo"], chat_types=["private"], pass_bot=True, is_admin=True)
+    bot.register_message_handler(subscribe, commands=["start"], chat_types=["private"], pass_bot=True)
 
 class Administrator(SimpleCustomFilter):
     """Administrator filter."""

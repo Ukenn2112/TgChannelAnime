@@ -5,4 +5,5 @@ config.json
 clannel_api.py
 *.session-journal
 run.log
+sqldata.db
 libcairo.2.dylib

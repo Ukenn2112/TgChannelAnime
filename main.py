@@ -8,6 +8,7 @@ import re
 import shutil
 
 from telebot.async_telebot import AsyncTeleBot
+from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 from telethon import TelegramClient
 
 from utils.bgm_nfo import episode_nfo, subject_name, subject_nfo
@@ -15,6 +16,7 @@ from utils.bot import bot_register
 from utils.download import download
 from utils.global_vars import config, queue
 from utils.msg_events import ani_chat_detecting, nc_chat_detecting
+from utils.sqlite_orm import SQLite
 
 logging.getLogger().setLevel(logging.INFO)
 logging.basicConfig(
@@ -24,6 +26,8 @@ logging.basicConfig(
         logging.StreamHandler(),
     ],
 )
+
+sql = SQLite()
 
 chi_to_num = {
     "一": "01",
@@ -47,34 +51,40 @@ async def worker(name):
         volume = queue_item[3]
         platform = queue_item[4]
         bgm_id = queue_item[5]
+        # 如果没有获得到 TMDB，则为 None
         tmdb_d = None
         if len(queue_item) == 7:
             tmdb_d = queue_item[6]
-
+        # 处理获取到的剧集名称并去除季度信息
         season = re.search(r"第(.*)季", season_name)
         if season:
             season_name = season_name.replace(season.group(0), "").strip()
+        # 拼接视频文件名称并生成文件夹
         file_name = f"{season_name} - S01E{volume} - {platform}"
         if not os.path.exists(config['save_path'] + file_name):
             os.mkdir(config['save_path'] + file_name)
-
-        folder_name = subject_name(bgm_id)
-        season = re.search(r"Season(.*)", folder_name)
-        if season:
-            folder_name = folder_name.replace(season.group(0), "").strip()
-
+        # 使用 BGM ID 获取番剧日语名称将其设置为 GD 目的目录并去除季度信息
+        up_folder_name = sql.inquiry_name_ja(bgm_id)
+        if not up_folder_name:
+            up_folder_name = subject_name(bgm_id)
+            season = re.search(r"Season(.*)", up_folder_name)
+            if season:
+                up_folder_name = up_folder_name.replace(season.group(0), "").strip()
+            sql.insert_data(bgm_id, tmdb_d, season_name, up_folder_name)
+        # 创建 Episode NFO 文件
         episode_data = episode_nfo(bgm_id, volume)
         if episode_data:
             with open(f"{config['save_path']}/{file_name}/{file_name}.nfo", "w", encoding="utf-8") as f:
                 f.write(episode_data)
                 f.close()
+        # 创建 Subject NFO 文件 先判断 GD 是否存在该文件夹 如果存在则不创建
         try:
             proc = await asyncio.create_subprocess_exec(
                 "rclone", "lsjson", f"{config['rclone_config_name']}:NC-Raws", "--dirs-only",
                 stdout=asyncio.subprocess.PIPE)
             output = await proc.communicate()
             dirs_list = json.loads(output[0].decode("utf-8"))
-            dirs = [dirs["Name"] for dirs in dirs_list if folder_name in dirs["Name"]]
+            dirs = [dirs["Name"] for dirs in dirs_list if up_folder_name in dirs["Name"]]
             if not dirs:
                 subject_data = subject_nfo(bgm_id, tmdb_d)
                 with open(f"{config['save_path']}/{file_name}/tvshow.nfo", "w", encoding="utf-8") as t:
@@ -96,17 +106,33 @@ async def worker(name):
         except Exception as e:
             logging.error(f"[file_name: {file_name}] - 生成 NFO 数据出错: {e}")
             pass
+        # 下载视频文件并上传到 GD
         try:
             logging.info(f"[file_name: {file_name}] - 开始下载")
             download(url, f"{config['save_path']}/{file_name}/{file_name}.{file_type}")
             logging.info(f"[file_name: {file_name}] - 开始上传")
             proc = await asyncio.create_subprocess_exec(
                 "rclone", "move", f"{config['save_path']}/{file_name}/",
-               f"{config['rclone_config_name']}:NC-Raws/{folder_name}/",
+               f"{config['rclone_config_name']}:NC-Raws/{up_folder_name}/",
                 "--transfers", "12", stdout=asyncio.subprocess.DEVNULL)
             await proc.wait()
             if proc.returncode == 0:
-                await bot.send_message(config["notice_chat"], f"\\[#更新提醒] `{bgm_id}`\n - 已上传: `{file_name}`", parse_mode="Markdown")
+                # 发送更新提醒 (用户)
+                markup = InlineKeyboardMarkup()
+                markup.add(InlineKeyboardButton('退订通知', url=f"tg://resolve?domain={config['bot_username']}&start=unsubscribe-{bgm_id}"))
+                subscribe_list = sql.inquiry_subscribe_alluser(bgm_id)
+                if subscribe_list:
+                    for users in subscribe_list:
+                        for user in users:
+                            await bot.send_message(user, f"[#更新提醒] {file_name} 更新咯～", reply_markup=markup)
+                        if len(subscribe_list) > 1: await asyncio.sleep(1)
+                # 发送更新提醒 (频道)
+                markupp = InlineKeyboardMarkup()
+                markupp.add(
+                    InlineKeyboardButton('查看详情', url=f"tg://resolve?domain=BangumiBot&start={bgm_id}"),
+                    InlineKeyboardButton("订阅通知", url=f"tg://resolve?domain={config['bot_username']}&start=subscribe-{bgm_id}")
+                    )
+                await bot.send_message(config["notice_chat"], f"\\[#更新提醒] `{bgm_id}`\n - 已上传: `{file_name}`", parse_mode="Markdown", reply_markup=markupp)
                 logging.info(f"[file_name: {file_name}] - 已下载并上传成功")
         except Exception as e:
             logging.error(f"[file_name: {file_name}] - 下载或上传失败: {e}")
@@ -116,6 +142,8 @@ async def worker(name):
 
 
 if __name__ == "__main__":
+    sql.create_season_db()
+    sql.create_subscribe_db()
     bot = AsyncTeleBot(config["bot_token"])
     bot_register(bot)
     client = TelegramClient("data/channel_downloader", config["api_id"], config["api_hash"]).start()
