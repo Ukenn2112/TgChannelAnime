@@ -125,7 +125,7 @@ async def worker(name):
                     for users in subscribe_list:
                         for user in users:
                             await bot.send_message(user, f"[#更新提醒] {file_name} 更新咯～", reply_markup=markup)
-                        if len(subscribe_list) > 1: await asyncio.sleep(1)
+                        await asyncio.sleep(1)
                 # 发送更新提醒 (频道)
                 markupp = InlineKeyboardMarkup()
                 markupp.add(
