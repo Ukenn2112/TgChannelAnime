@@ -91,7 +91,8 @@ def subject_nfo(subject_id, tmdb_d: str = None) -> dict:
         tvshow_json['tvshow']['runtime'] = tmdb_data['episode_run_time'][0]
         tvshow_json['tvshow']['genre'] = [g['name'] for g in tmdb_data['genres'][:3]]
         tvshow_json['tvshow']['studio'] = [s['name'] for s in tmdb_data['production_companies']]
-        tvshow_json['tvshow']['mpaa'] = [r['rating'] for r in tmdb_data['content_ratings']['results'] if r['iso_3166_1'] == 'US'] or tmdb_data['content_ratings']['results'][0]['rating']
+        if tmdb_data['content_ratings']['results']:
+            tvshow_json['tvshow']['mpaa'] = [r['rating'] for r in tmdb_data['content_ratings']['results'] if r['iso_3166_1'] == 'US'] or tmdb_data['content_ratings']['results'][0]['rating']
         tvshow_json['tvshow']['status'] = 'Continuing' if tmdb_data['status'] == 'Returning Series' else tmdb_data['status']
 
         tmdb_imgs = get_tmdb_images(tmdb_d[1], tmdb_d[0])

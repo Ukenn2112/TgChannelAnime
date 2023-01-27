@@ -94,6 +94,7 @@ async def worker(name):
                         f.write(subject_data['clearlogoImg'][0])
                         f.close()
         except Exception as e:
+            logging.error(f"[file_name: {file_name}] - 生成 NFO 数据出错: {e}")
             pass
         try:
             logging.info(f"[file_name: {file_name}] - 开始下载")
