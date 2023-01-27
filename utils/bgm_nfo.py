@@ -243,7 +243,7 @@ def get_bgm_episode(subject_id, num, _type = 0) -> dict:
     rr = s.get(f'https://api.bgm.tv/v0/subjects/{subject_id}')
     rr.raise_for_status()
     for i in r.json()['data']:
-        if i['sort'] == int(num):
+        if i['sort'] == int(num) or i['ep'] == int(num):
             i['showtitle'] = rr.json()['name_cn'] or rr.json()['name']
             i['poster'] = rr.json()['images']['large']
             return i

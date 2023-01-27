@@ -124,12 +124,9 @@ if __name__ == "__main__":
     tasks = []
     try:
         loop = asyncio.get_event_loop()
-        task = loop.create_task(bot.polling(non_stop=True))
-        tasks.append(task)
+        tasks.append(loop.create_task(bot.polling(non_stop=True)))
         for i in range(config["max_num"]):
-            loop = asyncio.get_event_loop()
-            task = loop.create_task(worker(f"worker-{i}"))
-            tasks.append(task)
+            tasks.append(loop.create_task(worker(f"worker-{i}")))
         print("已启动 (按 Ctrl+C 停止)")
         client.run_until_disconnected()
     finally:
