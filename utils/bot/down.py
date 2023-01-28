@@ -33,11 +33,11 @@ async def ani_down(message: Message, bot: AsyncTeleBot):
 async def nc_msg_down(message: Message, bot: AsyncTeleBot):
     if not message.forward_from_chat and message.forward_from_chat.id != -1001328150145:
         return
-    url = re.search(r'(https?:\/\/nc\.raws\.dev\/.*)">线上观看', message.html_caption)
+    url = re.search(r'https?:\/\/nc\.raws\.dev\/[0-9]+:video\/(.+?)"', message.html_caption)
     bgm_id = re.search(r'https?:\/\/bgm\.tv\/subject\/([0-9]+)', message.html_caption)
     if not url or not bgm_id: return await bot.reply_to(message, "无法解析此信息")
 
-    url = "https://nc.raws.dev" + base64.b64decode(url.group(1).split("/")[-1].replace("_", "/").replace("-", "+")).decode("utf-8")
+    url = "https://nc.raws.dev" + base64.b64decode(url.group(1).replace("_", "/").replace("-", "+")).decode("utf-8")
     bgm_id = bgm_id.group(1)
     tmdb_d = re.search(r'https?:\/\/www\.themoviedb\.org\/((tv|movie)\/[0-9]+)', message.html_caption)
     if tmdb_d: tmdb_d = tmdb_d.group(1)
@@ -48,7 +48,7 @@ async def nc_msg_down(message: Message, bot: AsyncTeleBot):
     volume = data.group(2)
     platform = data.group(3)
     url = urllib.parse.quote(url, safe=":/?&=").replace("mkv", "zip").replace("mp4", "zip")
-    tag_name = re.search(r"\n\n#(.+)\n\n", message.html_caption).group(1)
+    tag_name = re.search(r"#(.+?)\n\n", message.html_caption).group(1)
     for bid in config["bgm_compare"]:
         if bid["tagname"] == tag_name:
             bgm_id = bid["bgmid"]
