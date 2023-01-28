@@ -25,6 +25,7 @@ def range_download(save_name, s_pos, e_pos, url):
 
 def download(url, save_name):
     res = requests.head(url, allow_redirects=True)
+    res.raise_for_status()
     filesize = int(res.headers['Content-Length'])
     url = res.url
     divisional_ranges = calc_divisional_range(filesize)

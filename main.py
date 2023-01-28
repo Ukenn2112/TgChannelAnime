@@ -136,6 +136,7 @@ async def worker(name):
                 logging.info(f"[file_name: {file_name}] - 已下载并上传成功")
         except Exception as e:
             logging.error(f"[file_name: {file_name}] - 下载或上传失败: {e}")
+            await bot.send_message(config["notice_chat"], f"\\[#出错啦] `{bgm_id}`\n - {file_name} 下载或上传失败: \n\n`{e}`", parse_mode="Markdown")
         finally:
             shutil.rmtree(f"{config['save_path']}/{file_name}")
             queue.task_done()
