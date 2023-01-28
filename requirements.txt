@@ -1,0 +1,7 @@
+CairoSVG>=2.6.0
+more_itertools>=9.0.0
+pyTelegramBotAPI>=4.9.0
+requests>=2.28.1
+Telethon>=1.26.1
+waitress>=2.1.2
+xmltodict>=0.13.0
