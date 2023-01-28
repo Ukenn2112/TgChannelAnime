@@ -12,9 +12,9 @@ from utils.global_vars import config, queue
 async def nc_chat_detecting(update):
     message = update.message
     if message.file and "video" in message.file.mime_type:
-        url = re.search(r"\[线上观看&下载\]\((https?:\/\/[^)]+)\)", message.text)
-        bgm_id = re.search(r"\[\*\*bangumi\.tv\]\(https?:\/\/bgm\.tv\/subject\/([0-9]+)\)", message.text)
-        if not url and not bgm_id: return logging.error(f"[message_id: {message.id}] - 无法解析的消息")
+        url = re.search(r"https?:\/\/nc\.raws\.dev\/[0-9]+:video\/(.+?)\)", message.text)
+        bgm_id = re.search(r"https?:\/\/bgm\.tv\/subject\/([0-9]+)", message.text)
+        if not url or not bgm_id: return logging.error(f"[message_id: {message.id}] - 无法解析的消息")
 
         url = "https://nc.raws.dev" + base64.b64decode(url.group(1).split("/")[-1].replace("_", "/").replace("-", "+")).decode("utf-8")
         bgm_id = bgm_id.group(1)
@@ -54,18 +54,17 @@ async def nc_chat_detecting(update):
 async def ani_chat_detecting(update):
     message = update.message
     if message.file and "video" in message.file.mime_type:
-        url = re.search(r"【下載連結】: \[按我\]\((https?:\/\/[^)]+)\)", message.text)
+        url = re.search(r"(https?:\/\/resources\.ani\.rip\/.+?)\)", message.text)
         if not url: return logging.error(f"[message_id: {message.id}] - 无法解析的消息")
 
-        url = url.group(1)
-        file_name = re.search(r"【番名】: (.*)", message.text).group(1)
-        file_type = file_name.split(".")[-1].replace("?d=true", "")
+        file_name = re.search(r"【番名】: (.+?)\n", message.text).group(1)
+        file_type = file_name.split(".")[-1]
         data = re.search(r"\[ANi\] (.+) - (.+) \[.+\]\[(.+)\]\[.+\]\[.+\]\[.+\]\..+", file_name)
         season_name = data.group(1).replace("（僅限港澳台地區）", "")
         volume = data.group(2)
         platform = data.group(3)
 
-        tag_name = re.search(r"#新番更新  #(.*)", message.text).group(1)
+        tag_name = re.search(r"#新番更新  #(.+?)\n", message.text).group(1)
         bgm_id = None
         if platform != "Bilibili": return
         for w in config["Bilibili_whitelist"]:
@@ -73,5 +72,4 @@ async def ani_chat_detecting(update):
                 bgm_id = w['bgmid']
                 break
         if not bgm_id: return
-        url = urllib.parse.quote(url, safe=":/?&=").replace("mkv", "zip").replace("mp4", "zip")
-        await queue.put((url, season_name, file_type, volume, platform, bgm_id))
+        await queue.put((url.group(1), season_name, file_type, volume, platform, bgm_id))
