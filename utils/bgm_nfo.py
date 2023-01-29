@@ -87,12 +87,12 @@ def subject_nfo(subject_id, tmdb_d: str = None) -> dict:
             tvshow_json['tvshow']['actor'].append(c)
     clearlogo_img = None
     poster_img = (s.get(data['images']['large']).content, data['images']['large'].split('.')[-1])
+    tmdb_data = None
     if tmdb_d:
         tmdb_d: list = tmdb_d.split('/')
         try:
             tmdb_data = get_tmdb_subject(tmdb_d[1], tmdb_d[0])
         except:
-            tmdb_data = None
             logging.warning(f'获取 TMDB 数据失败，跳过 TMDB 数据获取 {tmdb_d[1]}/{tmdb_d[0]}')
     if tmdb_data:
         tvshow_json['tvshow']['runtime'] = tmdb_data['episode_run_time'][0]
