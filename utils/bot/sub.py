@@ -16,14 +16,14 @@ async def file_sub(message: Message, bot: AsyncTeleBot):
         return
     file = await bot.get_file(message.document.file_id)
     markup = ForceReply(selective=True, input_field_placeholder="请告诉我BGM ID 和 集数")
-    msg = await bot.reply_to(message, f"好的，已收到字幕\n\n`{file_name}`\n\n请回复此消息告诉我 BGM ID 和 集数（不满两位数需补0）\n\n", reply_markup=markup, parse_mode="Markdown")
+    msg = await bot.reply_to(message, f"好的，已收到字幕\n\n`{file_name}`\n\n请回复此消息告诉我 BGM ID 和 集数 中间用 `-` 隔开（不满两位数需补0）\n\n", reply_markup=markup, parse_mode="Markdown")
     wait_reply.append((msg.message_id, file.file_path, file_name))
 
 
 async def send_sub(message: Message, bot: AsyncTeleBot):
     if message.reply_to_message is None:
         return
-    msg_data = message.text.split(" ")
+    msg_data = message.text.split("-")
     sub_data, sub_type, sub_len = None, None, "default"
     for i in wait_reply:
         if i[0] == message.reply_to_message.message_id:
