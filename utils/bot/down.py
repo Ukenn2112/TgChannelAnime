@@ -10,7 +10,7 @@ from utils.global_vars import config, queue
 
 async def ani_down(message: Message, bot: AsyncTeleBot):
     data = message.text.split(" ")
-    if len(data) < 4:
+    if len(data) != 3:
         return await bot.reply_to(message, "参数错误")
     elif not data[1].isdecimal():
         return await bot.reply_to(message, "参数错误")
