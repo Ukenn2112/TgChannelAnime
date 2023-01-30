@@ -10,6 +10,7 @@ import shutil
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 from telethon import TelegramClient
+from telethon.tl.custom.message import Message
 
 from utils.bgm_nfo import episode_nfo, subject_name, subject_nfo
 from utils.bot import bot_register
@@ -52,9 +53,11 @@ async def worker(name):
         platform = queue_item[4]
         bgm_id = queue_item[5]
         # 如果没有获得到 TMDB，则为 None
-        tmdb_d = None
-        if len(queue_item) == 7:
+        tmdb_d, chat_msg_id = None, None
+        if len(queue_item) > 6:
             tmdb_d = queue_item[6]
+        if len(queue_item) > 7:
+            chat_msg_id = queue_item[7]
         # 处理获取到的剧集名称并去除季度信息
         season = re.search(r"第(.*)季", season_name)
         if season:
@@ -109,7 +112,17 @@ async def worker(name):
         # 下载视频文件并上传到 GD
         try:
             logging.info(f"[file_name: {file_name}] - 开始下载")
-            download(url, f"{config['save_path']}/{file_name}/{file_name}.{file_type}")
+            try:
+                download(url, f"{config['save_path']}/{file_name}/{file_name}.{file_type}")
+            except Exception as e:
+                if chat_msg_id:
+                    await bot.send_message(config["notice_chat"], f"\\[#报告] `{bgm_id}`\n - {file_name} NC Drive 下载失败，正在尝试从频道下载", parse_mode="Markdown")
+                    chat_msg = await client.get_messages(config["nc_chat_id"], ids=chat_msg_id)
+                    loop = asyncio.get_event_loop()
+                    task = loop.create_task(client.download_media(
+                        chat_msg, f"{config['save_path']}/{file_name}/{file_name}.{file_type}"))
+                    await asyncio.wait_for(task, timeout=3600)
+                else: raise e
             logging.info(f"[file_name: {file_name}] - 开始上传")
             proc = await asyncio.create_subprocess_exec(
                 "rclone", "move", f"{config['save_path']}/{file_name}/",

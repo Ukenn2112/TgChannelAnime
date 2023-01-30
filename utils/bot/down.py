@@ -54,4 +54,4 @@ async def nc_msg_down(message: Message, bot: AsyncTeleBot):
             bgm_id = bid["bgmid"]
             break
     await bot.reply_to(message, "已加入队列")
-    await queue.put((url, season_name, file_type, volume, platform, bgm_id, tmdb_d))
+    await queue.put((url, season_name, file_type, volume, platform, bgm_id, tmdb_d, message.forward_from_message_id))
