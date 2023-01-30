@@ -26,7 +26,10 @@ async def re_subject_nfo(message: Message, bot: AsyncTeleBot):
     if season: folder_name = folder_name.replace(season.group(0), "").strip()
     if not os.path.exists(f"{folder_name}_nfo"): os.mkdir(f"{folder_name}_nfo")
     # 生成 Season NFO
-    subject_data = subject_nfo(bgm_id, tmdb_type + '/' + tmdb_id)
+    try:
+        subject_data = subject_nfo(bgm_id, tmdb_type + '/' + tmdb_id)
+    except Exception as e:
+        return await bot.reply_to(message, f"获取 Season NFO 数据失败:\n\n{e}")
     with open(f"{config['save_path']}/{folder_name}_nfo/tvshow.nfo", "w", encoding="utf-8") as t:
         t.write(subject_data['tvshowNfo'])
         t.close()
@@ -54,7 +57,10 @@ async def re_subject_nfo(message: Message, bot: AsyncTeleBot):
         return await bot.reply_to(message, f"获取文件列表失败: 未找到文件夹 {folder_name}")
     if dirs_list:
         for video in dirs_list:
-            episode_data = episode_nfo(bgm_id, video.split(' - ')[1].split('E')[1])
+            try:
+                episode_data = episode_nfo(bgm_id, int(video.split(' - ')[1].split('E')[1]))
+            except Exception as e:
+                return await bot.reply_to(message, f"读取文件列表失败: 获取 Episode NFO 数据出错或命名错误\n\n{e}")
             with open(f"{config['save_path']}/{folder_name}_nfo/{video.split('.')[0]}.nfo", "w", encoding="utf-8") as e:
                 e.write(episode_data)
                 e.close()
