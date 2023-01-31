@@ -44,6 +44,7 @@ async def nc_msg_down(message: Message, bot: AsyncTeleBot):
     file_name = url.split("/")[-1]
     file_type = file_name.split(".")[-1]
     data = re.search(r"\[.+\] (.+) - (.+) \((.+) ([0-9]+x[0-9]+).+\)", file_name)
+    if not data: return await bot.reply_to(message, f"无法解析此信息 {file_name}")
     season_name = data.group(1)
     volume = data.group(2)
     platform = data.group(3)

@@ -116,7 +116,7 @@ async def worker(name):
                 download(url, f"{config['save_path']}/{file_name}/{file_name}.{file_type}")
             except Exception as e:
                 if chat_msg_id:
-                    await bot.send_message(config["notice_chat"], f"\\[#报告] `{bgm_id}`\n - {file_name} NC Drive 下载失败，正在尝试从频道下载", parse_mode="Markdown")
+                    await bot.send_message(config["notice_chat"], f"\\[#报告] `{bgm_id}`\n - {file_name}\n\nNC Drive 下载失败，正在尝试从频道下载", parse_mode="Markdown")
                     chat_msg = await client.get_messages(config["nc_chat_id"], ids=chat_msg_id)
                     loop = asyncio.get_event_loop()
                     task = loop.create_task(client.download_media(

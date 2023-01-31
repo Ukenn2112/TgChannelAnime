@@ -23,6 +23,7 @@ async def nc_chat_detecting(update):
         file_name = url.split("/")[-1]
         file_type = file_name.split(".")[-1]
         data = re.search(r"\[.+\] (.+) - (.+) \((.+) ([0-9]+x[0-9]+).+\)", file_name)
+        if not data: return logging.error(f"[message_id: {message.id}] - {file_name} 无法解析的消息")
         season_name = data.group(1)
         volume = data.group(2)
         platform = data.group(3)
@@ -60,6 +61,7 @@ async def ani_chat_detecting(update):
         file_name = re.search(r"【番名】: (.+?)\n", message.text).group(1)
         file_type = file_name.split(".")[-1]
         data = re.search(r"\[ANi\] (.+) - (.+) \[.+\]\[(.+)\]\[.+\]\[.+\]\[.+\]\..+", file_name)
+        if not data: return logging.error(f"[message_id: {message.id}] - {file_name} 无法解析的消息")
         season_name = data.group(1).replace("（僅限港澳台地區）", "")
         volume = data.group(2)
         platform = data.group(3)
