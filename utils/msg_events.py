@@ -12,11 +12,11 @@ from utils.global_vars import config, queue
 async def nc_chat_detecting(update):
     message = update.message
     if message.file and "video" in message.file.mime_type:
-        url = re.search(r"https?:\/\/nc\.raws\.dev\/[0-9]+:video\/(.+?)\)", message.text)
+        url = re.search(r"https?:\/\/tmp\.raws\.dev\/[0-9]+:video\/(.+?)\)", message.text)
         bgm_id = re.search(r"https?:\/\/bgm\.tv\/subject\/([0-9]+)", message.text)
         if not url or not bgm_id: return logging.error(f"[message_id: {message.id}] - 无法解析的消息")
 
-        url = "https://nc.raws.dev" + base64.b64decode(url.group(1).split("/")[-1].replace("_", "/").replace("-", "+")).decode("utf-8")
+        url = "https://tmp.raws.dev" + base64.b64decode(url.group(1).split("/")[-1].replace("_", "/").replace("-", "+")).decode("utf-8")
         bgm_id = bgm_id.group(1)
         tmdb_d = re.search(r"https?:\/\/www\.themoviedb\.org\/((tv|movie)\/[0-9]+)", message.text)
         if tmdb_d: tmdb_d = tmdb_d.group(1)
