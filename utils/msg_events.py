@@ -22,7 +22,7 @@ async def nc_chat_detecting(update):
         if tmdb_d: tmdb_d = tmdb_d.group(1)
         file_name = url.split("/")[-1]
         file_type = file_name.split(".")[-1]
-        data = re.search(r"\[NC-Raws\] (.+) - (.+) \((.+) ([0-9]+x[0-9]+).+\)", file_name)
+        data = re.search(r"\[.+\] (.+) - (.+) \((.+) ([0-9]+x[0-9]+).+\)", file_name)
         season_name = data.group(1)
         volume = data.group(2)
         platform = data.group(3)
