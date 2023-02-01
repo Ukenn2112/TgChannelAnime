@@ -5,25 +5,33 @@ import urllib.parse
 
 from telethon import events
 
-from utils.global_vars import config, queue
+from utils.global_vars import bot, config, queue
 
 
 @events.register(events.NewMessage(chats=config["nc_chat_id"]))
 async def nc_chat_detecting(update):
     message = update.message
     if message.file and "video" in message.file.mime_type:
-        url = re.search(r"https?:\/\/tmp\.raws\.dev\/[0-9]+:video\/(.+?)\)", message.text)
+        url = re.search(r"\[线上观看&下载\]\((https?:\/\/.+\.raws\.dev\/[0-9]+:video\/.+?)\)", message.text)
         bgm_id = re.search(r"https?:\/\/bgm\.tv\/subject\/([0-9]+)", message.text)
-        if not url or not bgm_id: return logging.error(f"[message_id: {message.id}] - 无法解析的消息")
+        if not url or not bgm_id:
+            await bot.send_message(config["notice_chat"],
+                f"\\[#出错啦]\n - NC 频道发送了一条无法解析的消息\nMessage: [{message.id}](https://t.me/c/{config['nc_chat_id']}/{message.id})", parse_mode="Markdown")
+            return logging.error(f"[message_id: {message.id}] - 无法解析的消息")
 
-        url = "https://tmp.raws.dev" + base64.b64decode(url.group(1).split("/")[-1].replace("_", "/").replace("-", "+")).decode("utf-8")
+        url = url.group(1).split("/")
+        url = "https://" + url[2] + base64.b64decode(url[-1].replace("_", "/").replace("-", "+")).decode("utf-8")
         bgm_id = bgm_id.group(1)
         tmdb_d = re.search(r"https?:\/\/www\.themoviedb\.org\/((tv|movie)\/[0-9]+)", message.text)
-        if tmdb_d: tmdb_d = tmdb_d.group(1)
+        if tmdb_d:
+            tmdb_d = tmdb_d.group(1)
         file_name = url.split("/")[-1]
         file_type = file_name.split(".")[-1]
         data = re.search(r"\[.+\] (.+) - (.+) \((.+) ([0-9]+x[0-9]+).+\)", file_name)
-        if not data: return logging.error(f"[message_id: {message.id}] - {file_name} 无法解析的消息")
+        if not data:
+            await bot.send_message(config["notice_chat"],
+                f"\\[#出错啦]\n - 文件名无法解析 `{file_name}`\nMessage: [{message.id}](https://t.me/c/{config['nc_chat_id']}/{message.id})", parse_mode="Markdown")
+            return logging.error(f"[message_id: {message.id}] - {file_name} 无法解析的消息")
         season_name = data.group(1)
         volume = data.group(2)
         platform = data.group(3)
@@ -56,12 +64,18 @@ async def ani_chat_detecting(update):
     message = update.message
     if message.file and "video" in message.file.mime_type:
         url = re.search(r"(https?:\/\/resources\.ani\.rip\/.+?)\)", message.text)
-        if not url: return logging.error(f"[message_id: {message.id}] - 无法解析的消息")
+        if not url:
+            await bot.send_message(config["notice_chat"],
+                f"\\[#出错啦]\n - Ani 频道发送了一条无法解析的消息\nMessage: [{message.id}](https://t.me/c/{config['ani_chat_id']}/{message.id})", parse_mode="Markdown")
+            return logging.error(f"[message_id: {message.id}] - 无法解析的消息")
 
         file_name = re.search(r"【番名】: (.+?)\n", message.text).group(1)
         file_type = file_name.split(".")[-1]
         data = re.search(r"\[ANi\] (.+) - (.+) \[.+\]\[(.+)\]\[.+\]\[.+\]\[.+\]\..+", file_name)
-        if not data: return logging.error(f"[message_id: {message.id}] - {file_name} 无法解析的消息")
+        if not data:
+            await bot.send_message(config["notice_chat"],
+                f"\\[#出错啦]\n - 文件名无法解析 `{file_name}`\nMessage: [{message.id}](https://t.me/c/{config['ani_chat_id']}/{message.id})", parse_mode="Markdown")
+            return logging.error(f"[message_id: {message.id}] - {file_name} 无法解析的消息")
         season_name = data.group(1).replace("（僅限港澳台地區）", "")
         volume = data.group(2)
         platform = data.group(3)

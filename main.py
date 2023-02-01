@@ -7,17 +7,14 @@ import os
 import re
 import shutil
 
-from telebot.async_telebot import AsyncTeleBot
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 from telethon import TelegramClient
-from telethon.tl.custom.message import Message
 
 from utils.bgm_nfo import episode_nfo, subject_name, subject_nfo
 from utils.bot import bot_register
 from utils.download import download
-from utils.global_vars import config, queue
+from utils.global_vars import bot, config, queue, sql
 from utils.msg_events import ani_chat_detecting, nc_chat_detecting
-from utils.sqlite_orm import SQLite
 
 logging.getLogger().setLevel(logging.INFO)
 logging.basicConfig(
@@ -27,8 +24,6 @@ logging.basicConfig(
         logging.StreamHandler(),
     ],
 )
-
-sql = SQLite()
 
 chi_to_num = {
     "一": "01",
@@ -45,19 +40,19 @@ chi_to_num = {
 
 async def worker(name):
     while True:
-        queue_item = await queue.get()
-        url = queue_item[0]
+        queue_item: list = await queue.get()
+        url: str = queue_item[0]
         season_name: str = queue_item[1]
-        file_type = queue_item[2]
-        volume = queue_item[3]
-        platform = queue_item[4]
-        bgm_id = queue_item[5]
+        file_type: str = queue_item[2]
+        volume: str = queue_item[3]
+        platform: str = queue_item[4]
+        bgm_id: str = queue_item[5]
         # 如果没有获得到 TMDB，则为 None
         tmdb_d, chat_msg_id = None, None
         if len(queue_item) > 6:
-            tmdb_d = queue_item[6]
+            tmdb_d: str = queue_item[6]
         if len(queue_item) > 7:
-            chat_msg_id = queue_item[7]
+            chat_msg_id: int = queue_item[7]
         # 处理获取到的剧集名称并去除季度信息
         season = re.search(r"第(.*)季", season_name)
         if season:
@@ -116,7 +111,8 @@ async def worker(name):
                 download(url, f"{config['save_path']}/{file_name}/{file_name}.{file_type}")
             except Exception as e:
                 if chat_msg_id:
-                    await bot.send_message(config["notice_chat"], f"\\[#报告] `{bgm_id}`\n - {file_name}\n\nNC Drive 下载失败，正在尝试从频道下载", parse_mode="Markdown")
+                    await bot.send_message(config["notice_chat"],
+                        f"\\[#报告] `{bgm_id}`\n - {file_name}\n\nNC Drive 下载失败，正在尝试从频道下载", parse_mode="Markdown")
                     chat_msg = await client.get_messages(config["nc_chat_id"], ids=chat_msg_id)
                     loop = asyncio.get_event_loop()
                     task = loop.create_task(client.download_media(
@@ -158,7 +154,6 @@ async def worker(name):
 if __name__ == "__main__":
     sql.create_season_db()
     sql.create_subscribe_db()
-    bot = AsyncTeleBot(config["bot_token"])
     bot_register(bot)
     client = TelegramClient("data/channel_downloader", config["api_id"], config["api_hash"]).start()
     client.add_event_handler(nc_chat_detecting)
@@ -175,4 +170,5 @@ if __name__ == "__main__":
         for task in tasks:
             task.cancel()
         client.disconnect()
+        sql.close()
         print("已停止")

@@ -1,10 +1,7 @@
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
-from utils.global_vars import config
-from utils.sqlite_orm import SQLite
-
-sql = SQLite()
+from utils.global_vars import config, sql
 
 async def subscribe(message: Message, bot: AsyncTeleBot):
     tg_id = message.from_user.id
