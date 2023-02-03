@@ -56,7 +56,7 @@ async def nc_chat_detecting(update):
         else:
             return logging.error(f"[file_name: {file_name}] - 未知平台: {platform}")
         url = urllib.parse.quote(url, safe=":/?&=").replace("mkv", "zip").replace("mp4", "zip")
-        await queue.put((url, season_name, file_type, volume, platform, bgm_id, tmdb_d))
+        await queue.put((url, season_name, file_type, volume, platform, bgm_id, tmdb_d, message.id))
 
 
 @events.register(events.NewMessage(chats=config["ani_chat_id"]))
