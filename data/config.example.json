@@ -14,6 +14,8 @@
     "notice_chat": -123123,
     "nc_chat_id": 123123,
     "ani_chat_id": 123123,
+    "forward_chat_id": 123123,
+    "nc_group_id": 123123,
     "save_path": "./",
     "rclone_config_name": "xxxx_gd",
     "max_num": 5,

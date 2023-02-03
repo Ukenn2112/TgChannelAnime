@@ -8,14 +8,13 @@ import re
 import shutil
 
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
-from telethon import TelegramClient
 
 from utils.abema import abema_download
 from utils.bgm_nfo import episode_nfo, subject_name, subject_nfo
 from utils.bot import bot_register
 from utils.download import download
-from utils.global_vars import bot, config, queue, sql
-from utils.msg_events import ani_chat_detecting, nc_chat_detecting
+from utils.global_vars import bot, client, config, queue, sql
+from utils.msg_events import ani_chat_detecting, nc_chat_detecting, nc_group_detecting
 from utils.schedule_orm import run_schedule, set_schedule
 
 logging.getLogger().setLevel(logging.INFO)
@@ -167,9 +166,10 @@ if __name__ == "__main__":
     sql.create_abema_db()
     set_schedule()
     bot_register(bot)
-    client = TelegramClient("data/channel_downloader", config["api_id"], config["api_hash"]).start()
+    client.start()
     client.add_event_handler(nc_chat_detecting)
     client.add_event_handler(ani_chat_detecting)
+    client.add_event_handler(nc_group_detecting)
     tasks = []
     try:
         loop = asyncio.get_event_loop()

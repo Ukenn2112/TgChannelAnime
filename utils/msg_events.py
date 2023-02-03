@@ -5,7 +5,7 @@ import urllib.parse
 
 from telethon import events
 
-from utils.global_vars import bot, config, queue
+from utils.global_vars import bot, config, queue, client
 
 
 @events.register(events.NewMessage(chats=config["nc_chat_id"]))
@@ -89,3 +89,12 @@ async def ani_chat_detecting(update):
                 break
         if not bgm_id: return
         await queue.put((url.group(1), season_name, file_type, volume, platform, bgm_id))
+
+
+@events.register(events.NewMessage(chats=config["nc_group_id"]))
+async def nc_group_detecting(update):
+    message = update.message
+    if not message.file:
+        return
+    elif message.file.ext == ".srt":
+        await client.forward_messages(config["forward_chat_id"], message)
