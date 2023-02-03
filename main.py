@@ -7,16 +7,16 @@ import os
 import re
 import shutil
 
-import schedule
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 from telethon import TelegramClient
 
-from utils.abema import abema_worker, abema_download
+from utils.abema import abema_download
 from utils.bgm_nfo import episode_nfo, subject_name, subject_nfo
 from utils.bot import bot_register
 from utils.download import download
 from utils.global_vars import bot, config, queue, sql
 from utils.msg_events import ani_chat_detecting, nc_chat_detecting
+from utils.schedule_orm import run_schedule, set_schedule
 
 logging.getLogger().setLevel(logging.INFO)
 logging.basicConfig(
@@ -159,36 +159,6 @@ async def worker(name):
         finally:
             shutil.rmtree(f"{config['save_path']}{file_name}")
             queue.task_done()
-
-
-def set_schedule():
-    for ab in config["abema_list"]:
-        if ab["week"] == "1":
-            schedule.every().monday.at(ab["time"]).do(async_function, ab["sid"], ab["bgmid"])
-        elif ab["week"] == "2":
-            schedule.every().tuesday.at(ab["time"]).do(async_function, ab["sid"], ab["bgmid"])
-        elif ab["week"] == "3":
-            schedule.every().wednesday.at(ab["time"]).do(async_function, ab["sid"], ab["bgmid"])
-        elif ab["week"] == "4":
-            schedule.every().thursday.at(ab["time"]).do(async_function, ab["sid"], ab["bgmid"])
-        elif ab["week"] == "5":
-            schedule.every().friday.at(ab["time"]).do(async_function, ab["sid"], ab["bgmid"])
-        elif ab["week"] == "6":
-            schedule.every().saturday.at(ab["time"]).do(async_function, ab["sid"], ab["bgmid"])
-        elif ab["week"] == "7":
-            schedule.every().sunday.at(ab["time"]).do(async_function, ab["sid"], ab["bgmid"])
-
-
-def async_function(sid, bgmid):
-    loop = asyncio.get_event_loop()
-    tasks.append(loop.create_task(abema_worker(sid, bgmid)))
-
-
-async def run_schedule():
-    logging.info("已设置定时任务")
-    while True:
-        schedule.run_pending()
-        await asyncio.sleep(60)
 
 
 if __name__ == "__main__":

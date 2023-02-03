@@ -1,9 +1,11 @@
 import json
+import logging
 
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import Message
 
 from utils.global_vars import config
+from utils.schedule_orm import clear_schedule, set_schedule
 
 
 async def add_white(message: Message, bot: AsyncTeleBot):
@@ -81,6 +83,9 @@ async def add_white(message: Message, bot: AsyncTeleBot):
                 for i in config["abema_list"]:
                     if i["sid"] == d:
                         config["abema_list"].remove(i)
+        clear_schedule()
+        set_schedule()
+        logging.info("已重新设置定时任务")
     with open("data/config.json", "w", encoding="utf-8") as f:
         json.dump(config, f, indent=4, ensure_ascii=False)
     await bot.reply_to(message, (
