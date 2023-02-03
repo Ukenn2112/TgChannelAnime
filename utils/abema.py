@@ -9,6 +9,17 @@ s.headers.update({
     "Authorization": "bearer " + config["abema_barer"]
     })
 
+ydl = YoutubeDL({
+        'username': config['abema_username'],
+        'password': config['abema_password'],
+        'quiet': False,
+        'no_warnings': True,
+        'outtmpl': config['save_path'] + '%(series)s - S01E%(episode_number)02d - Abema/%(series)s - S01E%(episode_number)02d - Abema.%(ext)s',
+        'allow_unplayable_formats': True,
+        'fixup': 'never',
+        'overwrites': True,
+        'external_downloader': 'aria2c'
+    })
 
 async def abema_worker(sid: str, bgm_id, tmdb_d = None, eid = None):
     is_downs = sql.inquiry_abema(sid)
@@ -43,16 +54,5 @@ async def abema_worker(sid: str, bgm_id, tmdb_d = None, eid = None):
 
 
 def abema_download(url: str, bgm_id):
-    with YoutubeDL({
-            'username': config['abema_username'],
-            'password': config['abema_password'],
-            'quiet': False,
-            'no_warnings': True,
-            'outtmpl': config['save_path'] + '%(series)s - S01E%(episode_number)02d - Abema/%(series)s - S01E%(episode_number)02d - Abema.%(ext)s',
-            'allow_unplayable_formats': True,
-            'fixup': 'never',
-            'overwrites': True,
-            'external_downloader': 'aria2c'
-        }) as ydl:
-            ydl.download(url)
+    ydl.download(url)
     sql.insert_abema(url.split("/")[-1].split("_s")[0], url.split("/")[-1], bgm_id)
