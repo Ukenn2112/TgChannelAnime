@@ -68,6 +68,31 @@ class SQLite:
         self.cursor.execute(f"DELETE FROM Subscribe WHERE bgm_id = {bgm_id} AND tg_id = {tg_id}")
         self.conn.commit()
 
+###### Abema 数据库操作 ######
+    def create_abema_db(self):
+        """创建 Abema 数据库"""
+        self.cursor.execute("""create table if not exists
+            Abema(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sid VARCHAR(255),
+            down_eid VARCHAR(255),
+            bgm_id INTEGER)
+            """)
+        self.conn.commit()
+    
+    def inquiry_abema(self, sid) -> list:
+        """使用 sid 查询"""
+        data = self.cursor.execute(f"SELECT down_eid FROM Abema WHERE sid = '{sid}'").fetchone()
+        if data:
+            return data
+        else:
+            return []
+    
+    def insert_abema(self, sid, down_eid, bgm_id):
+        """添加 Abema 数据"""
+        self.cursor.execute(f"INSERT INTO Abema (sid, down_eid, bgm_id) VALUES ('{sid}', '{down_eid}', {bgm_id})")
+        self.conn.commit()
+
 
     def close(self):
         self.conn.close()

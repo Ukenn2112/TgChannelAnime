@@ -5,6 +5,9 @@
     "bot_token": "591xxxxx37:Axxxxxxx25kUiAcY",
     "bgm_token": "https://next.bgm.tv/demo/access-token",
     "tmdb_token": "xxx",
+    "abema_username": "xxx",
+    "abema_password": "xxx",
+    "abema_barer": "xxx",
     "admin_list": [
         123123
     ],
@@ -19,5 +22,6 @@
     "B_Global_whitelist": [],
     "Bilibili_whitelist": [],
     "CR_whitelist": [],
-    "Sentai_whitelist": []
+    "Sentai_whitelist": [],
+    "abema_list": []
 }

@@ -30,20 +30,20 @@ async def re_subject_nfo(message: Message, bot: AsyncTeleBot):
         subject_data = subject_nfo(bgm_id, tmdb_type + '/' + tmdb_id)
     except Exception as e:
         return await bot.reply_to(message, f"获取 Season NFO 数据失败:\n\n{e}")
-    with open(f"{config['save_path']}/{folder_name}_nfo/tvshow.nfo", "w", encoding="utf-8") as t:
+    with open(f"{config['save_path']}{folder_name}_nfo/tvshow.nfo", "w", encoding="utf-8") as t:
         t.write(subject_data['tvshowNfo'])
         t.close()
-    with open(f"{config['save_path']}/{folder_name}_nfo/season.nfo", "w", encoding="utf-8") as s:
+    with open(f"{config['save_path']}{folder_name}_nfo/season.nfo", "w", encoding="utf-8") as s:
         s.write(subject_data['seasonNfo'])
         s.close()
-    with open(f"{config['save_path']}/{folder_name}_nfo/poster.{subject_data['posterImg'][1]}", "wb") as f:
+    with open(f"{config['save_path']}{folder_name}_nfo/poster.{subject_data['posterImg'][1]}", "wb") as f:
         f.write(subject_data['posterImg'][0])
         f.close()
-    with open(f"{config['save_path']}/{folder_name}_nfo/fanart.{subject_data['fanartImg'][1]}", "wb") as f:
+    with open(f"{config['save_path']}{folder_name}_nfo/fanart.{subject_data['fanartImg'][1]}", "wb") as f:
         f.write(subject_data['fanartImg'][0])
         f.close()
     if subject_data['clearlogoImg']:
-        with open(f"{config['save_path']}/{folder_name}_nfo/clearlogo.{subject_data['clearlogoImg'][1]}", "wb") as f:
+        with open(f"{config['save_path']}{folder_name}_nfo/clearlogo.{subject_data['clearlogoImg'][1]}", "wb") as f:
             f.write(subject_data['clearlogoImg'][0])
             f.close()
     await bot.edit_message_text("已生成 Season NFO 文件，正在开始生成 Episode NFO...", message.chat.id, msg.message_id)
@@ -61,7 +61,7 @@ async def re_subject_nfo(message: Message, bot: AsyncTeleBot):
                 episode_data = episode_nfo(bgm_id, int(video.split(' - ')[1].split('E')[1]))
             except Exception as e:
                 return await bot.reply_to(message, f"读取文件列表失败: 获取 Episode NFO 数据出错或命名错误\n\n{e}")
-            with open(f"{config['save_path']}/{folder_name}_nfo/{video.split('.')[0]}.nfo", "w", encoding="utf-8") as e:
+            with open(f"{config['save_path']}{folder_name}_nfo/{video.split('.')[0]}.nfo", "w", encoding="utf-8") as e:
                 e.write(episode_data)
                 e.close()
         await bot.edit_message_text(f"已生成 Episode NFO 文件，正在开始上传...", message.chat.id, msg.message_id)
@@ -69,7 +69,7 @@ async def re_subject_nfo(message: Message, bot: AsyncTeleBot):
         return await bot.reply_to(message, f"获取文件列表失败: 未找到 {folder_name} 文件夹下的视频文件")
     try:
         proc = await asyncio.create_subprocess_exec(
-            "rclone", "move", f"{config['save_path']}/{folder_name}_nfo/",
+            "rclone", "move", f"{config['save_path']}{folder_name}_nfo/",
             f"{config['rclone_config_name']}:NC-Raws/{folder_name}/",
             "--transfers", "12", stdout=asyncio.subprocess.DEVNULL)
         await proc.wait()
@@ -78,4 +78,4 @@ async def re_subject_nfo(message: Message, bot: AsyncTeleBot):
     except Exception as e:
         await bot.reply_to(message, f"上传失败: {e}")
     finally:
-        shutil.rmtree(f"{config['save_path']}/{folder_name}_nfo")
+        shutil.rmtree(f"{config['save_path']}{folder_name}_nfo")

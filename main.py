@@ -7,9 +7,11 @@ import os
 import re
 import shutil
 
+import schedule
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 from telethon import TelegramClient
 
+from utils.abema import abema_worker, abema_download
 from utils.bgm_nfo import episode_nfo, subject_name, subject_nfo
 from utils.bot import bot_register
 from utils.download import download
@@ -53,26 +55,31 @@ async def worker(name):
             tmdb_d: str = queue_item[6]
         if len(queue_item) > 7:
             chat_msg_id: int = queue_item[7]
-        # 处理获取到的剧集名称并去除季度信息
-        season = re.search(r"第(.*)季", season_name)
-        if season:
-            season_name = season_name.replace(season.group(0), "").strip()
-        # 拼接视频文件名称并生成文件夹
-        file_name = f"{season_name} - S01E{volume} - {platform}"
+        if platform == "Abema":
+            file_name = f"{season_name} - S01E{volume:02d} - {platform}"
+            up_folder_name = season_name
+        else: # 除 abema 其他平台
+            # 处理获取到的剧集名称并去除季度信息
+            season = re.search(r"第(.*)季", season_name)
+            if season:
+                season_name = season_name.replace(season.group(0), "").strip()
+            # 拼接视频文件名称
+            file_name = f"{season_name} - S01E{volume} - {platform}"
+            # 使用 BGM ID 获取番剧日语名称将其设置为 GD 目的目录并去除季度信息
+            up_folder_name = sql.inquiry_name_ja(bgm_id)
+            if not up_folder_name:
+                up_folder_name = subject_name(bgm_id)
+                season = re.search(r"Season(.*)", up_folder_name)
+                if season:
+                    up_folder_name = up_folder_name.replace(season.group(0), "").strip()
+                sql.insert_data(bgm_id, tmdb_d, season_name, up_folder_name)
+        # 创建临时下载文件夹
         if not os.path.exists(config['save_path'] + file_name):
             os.mkdir(config['save_path'] + file_name)
-        # 使用 BGM ID 获取番剧日语名称将其设置为 GD 目的目录并去除季度信息
-        up_folder_name = sql.inquiry_name_ja(bgm_id)
-        if not up_folder_name:
-            up_folder_name = subject_name(bgm_id)
-            season = re.search(r"Season(.*)", up_folder_name)
-            if season:
-                up_folder_name = up_folder_name.replace(season.group(0), "").strip()
-            sql.insert_data(bgm_id, tmdb_d, season_name, up_folder_name)
         # 创建 Episode NFO 文件
         episode_data = episode_nfo(bgm_id, volume)
         if episode_data:
-            with open(f"{config['save_path']}/{file_name}/{file_name}.nfo", "w", encoding="utf-8") as f:
+            with open(f"{config['save_path']}{file_name}/{file_name}.nfo", "w", encoding="utf-8") as f:
                 f.write(episode_data)
                 f.close()
         # 创建 Subject NFO 文件 先判断 GD 是否存在该文件夹 如果存在则不创建
@@ -85,20 +92,20 @@ async def worker(name):
             dirs = [dirs["Name"] for dirs in dirs_list if up_folder_name in dirs["Name"]]
             if not dirs:
                 subject_data = subject_nfo(bgm_id, tmdb_d)
-                with open(f"{config['save_path']}/{file_name}/tvshow.nfo", "w", encoding="utf-8") as t:
+                with open(f"{config['save_path']}{file_name}/tvshow.nfo", "w", encoding="utf-8") as t:
                     t.write(subject_data['tvshowNfo'])
                     t.close()
-                with open(f"{config['save_path']}/{file_name}/season.nfo", "w", encoding="utf-8") as s:
+                with open(f"{config['save_path']}{file_name}/season.nfo", "w", encoding="utf-8") as s:
                     s.write(subject_data['seasonNfo'])
                     s.close()
-                with open(f"{config['save_path']}/{file_name}/poster.{subject_data['posterImg'][1]}", "wb") as f:
+                with open(f"{config['save_path']}{file_name}/poster.{subject_data['posterImg'][1]}", "wb") as f:
                     f.write(subject_data['posterImg'][0])
                     f.close()
-                with open(f"{config['save_path']}/{file_name}/fanart.{subject_data['fanartImg'][1]}", "wb") as f:
+                with open(f"{config['save_path']}{file_name}/fanart.{subject_data['fanartImg'][1]}", "wb") as f:
                     f.write(subject_data['fanartImg'][0])
                     f.close()
                 if subject_data['clearlogoImg']:
-                    with open(f"{config['save_path']}/{file_name}/clearlogo.{subject_data['clearlogoImg'][1]}", "wb") as f:
+                    with open(f"{config['save_path']}{file_name}/clearlogo.{subject_data['clearlogoImg'][1]}", "wb") as f:
                         f.write(subject_data['clearlogoImg'][0])
                         f.close()
         except Exception as e:
@@ -108,7 +115,10 @@ async def worker(name):
         try:
             logging.info(f"[file_name: {file_name}] - 开始下载")
             try:
-                download(url, f"{config['save_path']}/{file_name}/{file_name}.{file_type}")
+                if platform == "Abema":
+                    abema_download(url, bgm_id)
+                else:
+                    download(url, f"{config['save_path']}{file_name}/{file_name}.{file_type}")
             except Exception as e:
                 if chat_msg_id:
                     await bot.send_message(config["notice_chat"],
@@ -116,12 +126,12 @@ async def worker(name):
                     chat_msg = await client.get_messages(config["nc_chat_id"], ids=chat_msg_id)
                     loop = asyncio.get_event_loop()
                     task = loop.create_task(client.download_media(
-                        chat_msg, f"{config['save_path']}/{file_name}/{file_name}.{file_type}"))
+                        chat_msg, f"{config['save_path']}{file_name}/{file_name}.{file_type}"))
                     await asyncio.wait_for(task, timeout=3600)
                 else: raise e
             logging.info(f"[file_name: {file_name}] - 开始上传")
             proc = await asyncio.create_subprocess_exec(
-                "rclone", "move", f"{config['save_path']}/{file_name}/",
+                "rclone", "move", f"{config['save_path']}{file_name}/",
                f"{config['rclone_config_name']}:NC-Raws/{up_folder_name}/",
                 "--transfers", "12", stdout=asyncio.subprocess.DEVNULL)
             await proc.wait()
@@ -147,13 +157,45 @@ async def worker(name):
             logging.error(f"[file_name: {file_name}] - 下载或上传失败: {e}")
             await bot.send_message(config["notice_chat"], f"\\[#出错啦] `{bgm_id}`\n - {file_name} 下载或上传失败: \n\n`{e}`", parse_mode="Markdown")
         finally:
-            shutil.rmtree(f"{config['save_path']}/{file_name}")
+            shutil.rmtree(f"{config['save_path']}{file_name}")
             queue.task_done()
+
+
+def set_schedule():
+    for ab in config["abema_list"]:
+        if ab["week"] == "1":
+            schedule.every().monday.at(ab["time"]).do(async_function, ab["sid"], ab["bgmid"])
+        elif ab["week"] == "2":
+            schedule.every().tuesday.at(ab["time"]).do(async_function, ab["sid"], ab["bgmid"])
+        elif ab["week"] == "3":
+            schedule.every().wednesday.at(ab["time"]).do(async_function, ab["sid"], ab["bgmid"])
+        elif ab["week"] == "4":
+            schedule.every().thursday.at(ab["time"]).do(async_function, ab["sid"], ab["bgmid"])
+        elif ab["week"] == "5":
+            schedule.every().friday.at(ab["time"]).do(async_function, ab["sid"], ab["bgmid"])
+        elif ab["week"] == "6":
+            schedule.every().saturday.at(ab["time"]).do(async_function, ab["sid"], ab["bgmid"])
+        elif ab["week"] == "7":
+            schedule.every().sunday.at(ab["time"]).do(async_function, ab["sid"], ab["bgmid"])
+
+
+def async_function(sid, bgmid):
+    loop = asyncio.get_event_loop()
+    tasks.append(loop.create_task(abema_worker(sid, bgmid)))
+
+
+async def run_schedule():
+    logging.info("已设置定时任务")
+    while True:
+        schedule.run_pending()
+        await asyncio.sleep(60)
 
 
 if __name__ == "__main__":
     sql.create_season_db()
     sql.create_subscribe_db()
+    sql.create_abema_db()
+    set_schedule()
     bot_register(bot)
     client = TelegramClient("data/channel_downloader", config["api_id"], config["api_hash"]).start()
     client.add_event_handler(nc_chat_detecting)
@@ -162,6 +204,7 @@ if __name__ == "__main__":
     try:
         loop = asyncio.get_event_loop()
         tasks.append(loop.create_task(bot.polling(non_stop=True)))
+        tasks.append(loop.create_task(run_schedule()))
         for i in range(config["max_num"]):
             tasks.append(loop.create_task(worker(f"worker-{i}")))
         print("已启动 (按 Ctrl+C 停止)")

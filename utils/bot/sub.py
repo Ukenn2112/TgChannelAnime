@@ -58,7 +58,7 @@ async def send_sub(message: Message, bot: AsyncTeleBot):
                     f.write(sub_data)
                     f.close()
                 proc = await asyncio.create_subprocess_exec(
-                    "rclone", "move", f"{config['save_path']}/{sub_file}",
+                    "rclone", "move", f"{config['save_path']}{sub_file}",
                     f"{config['rclone_config_name']}:NC-Raws/{folder_name}/",
                     "--transfers", "12", stdout=asyncio.subprocess.DEVNULL)
                 await proc.wait()

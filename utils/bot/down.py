@@ -6,17 +6,23 @@ from telebot.async_telebot import AsyncTeleBot
 from telebot.types import Message
 
 from utils.global_vars import config, queue
+from utils.abema import abema_worker
 
 
-async def ani_down(message: Message, bot: AsyncTeleBot):
+async def url_down(message: Message, bot: AsyncTeleBot):
     data = message.text.split(" ")
-    if len(data) != 3:
+    if len(data) < 2:
         return await bot.reply_to(message, "参数错误")
     elif not data[1].isdecimal():
         return await bot.reply_to(message, "参数错误")
     bgm_id = data[1]
-    if re.search(r"(resources\.ani\.rip)", data[2]):
-        url = urllib.parse.unquote(data[2], encoding='utf-8')
+    if len(data) > 3:
+        tmdb_d = data[2]
+        _url = data[3]
+        if tmdb_d.isdecimal(): return await bot.reply_to(message, "参数错误")
+    else: tmdb_d, _url = None, data[2]
+    if re.search(r"(resources\.ani\.rip)", _url):
+        url = urllib.parse.unquote(_url, encoding='utf-8')
         file_name = url.split("/")[-1]
         file_type = file_name.split(".")[-1].replace("?d=true", "")
         data = re.search(r"\[ANi\] (.+) - (.+) \[.+\]\[(.+)\]\[.+\]\[.+\]\[.+\]\..+", file_name)
@@ -24,10 +30,13 @@ async def ani_down(message: Message, bot: AsyncTeleBot):
         volume = data.group(2)
         platform = data.group(3)
         url = urllib.parse.quote(url, safe=":/?&=")
+    elif re.search(r"(abema\.tv\/video\/episode\/)", _url):
+        await bot.reply_to(message, "已加入队列")
+        return await abema_worker(_url.split("/")[-1].split("_s")[0], bgm_id, tmdb_d, _url.split("/")[-1])
     else:
         return await bot.reply_to(message, "错误的链接")
     await bot.reply_to(message, "已加入队列")
-    await queue.put((url, season_name, file_type, volume, platform, bgm_id))
+    await queue.put((url, season_name, file_type, volume, platform, bgm_id, tmdb_d))
 
 
 async def nc_msg_down(message: Message, bot: AsyncTeleBot):
