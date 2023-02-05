@@ -7,7 +7,7 @@ from telethon import TelegramClient
 from utils.sqlite_orm import SQLite
 
 with open("data/config.json", "r", encoding="utf-8") as f:
-    config = json.load(f)
+    config: dict = json.load(f)
 
 queue = asyncio.Queue()
 

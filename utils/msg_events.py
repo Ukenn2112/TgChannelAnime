@@ -33,7 +33,7 @@ async def nc_chat_detecting(update):
                 f"\\[#出错啦]\n - 文件名无法解析 `{file_name}`\nMessage: [{message.id}](https://t.me/c/{config['nc_chat_id']}/{message.id})", parse_mode="Markdown")
             return logging.error(f"[message_id: {message.id}] - {file_name} 无法解析的消息")
         season_name = data.group(1)
-        volume = data.group(2)
+        volume = int(data.group(2)) if data.group(2).isdigit() else 1
         platform = data.group(3)
 
         tag_name = re.search(r"\n\n#(.+)\n\n", message.text).group(1)
@@ -77,7 +77,7 @@ async def ani_chat_detecting(update):
                 f"\\[#出错啦]\n - 文件名无法解析 `{file_name}`\nMessage: [{message.id}](https://t.me/c/{config['ani_chat_id']}/{message.id})", parse_mode="Markdown")
             return logging.error(f"[message_id: {message.id}] - {file_name} 无法解析的消息")
         season_name = data.group(1).replace("（僅限港澳台地區）", "")
-        volume = data.group(2)
+        volume = int(data.group(2)) if data.group(2).isdigit() else 1
         platform = data.group(3)
 
         tag_name = re.search(r"#新番更新  #(.+?)\n", message.text).group(1)
@@ -94,7 +94,6 @@ async def ani_chat_detecting(update):
 @events.register(events.NewMessage(chats=config["nc_group_id"]))
 async def nc_group_detecting(update):
     message = update.message
-    if not message.file:
-        return
+    if not message.file: return
     elif message.file.ext == ".srt":
-        await client.forward_messages(config["forward_chat_id"], message)
+        return await client.forward_messages(config["forward_chat_id"], message)

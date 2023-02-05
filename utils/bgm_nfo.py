@@ -1,4 +1,5 @@
 import logging
+import os
 
 import cairosvg
 import requests
@@ -159,7 +160,7 @@ def subject_nfo(subject_id, tmdb_d: str = None) -> dict:
     }
 
 
-def episode_nfo(subject_id, num, _type = 0) -> str:
+def episode_nfo(subject_id, num: int, _type = 0) -> str:
     """Bangumi Episode ID 生成 NFO 内容
     :param subject_id: Bangumi Subject ID
     :param num: 第几集
@@ -212,7 +213,7 @@ def get_bgm_subject(subject_id) -> dict:
     return data
 
 def subject_name(subject_id) -> str:
-    """请求 Bangumi API 获取番剧信息"""
+    """请求 Bangumi API 获取番剧名称"""
     r = s.get(f'https://api.bgm.tv/v0/subjects/{subject_id}')
     r.raise_for_status()
     return r.json()['name']
@@ -242,7 +243,7 @@ def get_tmdb_images(tmdb_id, _type = 'tv') -> dict:
     r.raise_for_status()
     return r.json()
 
-def get_bgm_episode(subject_id, num, _type = 0) -> dict:
+def get_bgm_episode(subject_id, num: int, _type = 0) -> dict:
     """请求 Bangumi API 获取剧集信息
     :param subject_id: Bangumi Subject ID
     :param num: 第几集
@@ -253,8 +254,32 @@ def get_bgm_episode(subject_id, num, _type = 0) -> dict:
     rr = s.get(f'https://api.bgm.tv/v0/subjects/{subject_id}')
     rr.raise_for_status()
     for i in r.json()['data']:
-        if i['sort'] == int(num) or i['ep'] == int(num):
+        if i['sort'] == num or i['ep'] == num:
             i['showtitle'] = rr.json()['name_cn'] or rr.json()['name']
             i['poster'] = rr.json()['images']['large']
             return i
     return None
+
+def save_nfo(worker_path, video_name: str = None, subject_data: dict = None, episode_data: dict = None):
+    """保存 NFO 文件"""
+    if subject_data:
+        with open(f"{worker_path}/tvshow.nfo", "w", encoding="utf-8") as t:
+            t.write(subject_data['tvshowNfo'])
+            t.close()
+        with open(f"{worker_path}/season.nfo", "w", encoding="utf-8") as s:
+            s.write(subject_data['seasonNfo'])
+            s.close()
+        with open(f"{worker_path}/poster.{subject_data['posterImg'][1]}", "wb") as p:
+            p.write(subject_data['posterImg'][0])
+            p.close()
+        with open(f"{worker_path}/fanart.{subject_data['fanartImg'][1]}", "wb") as f:
+            f.write(subject_data['fanartImg'][0])
+            f.close()
+        if subject_data['clearlogoImg']:
+            with open(f"{worker_path}/clearlogo.{subject_data['clearlogoImg'][1]}", "wb") as c:
+                c.write(subject_data['clearlogoImg'][0])
+                c.close()
+    if episode_data:
+        with open(f"{worker_path}/{video_name}.nfo", "w", encoding="utf-8") as ff:
+                ff.write(episode_data)
+                ff.close()

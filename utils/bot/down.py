@@ -27,7 +27,7 @@ async def url_down(message: Message, bot: AsyncTeleBot):
         file_type = file_name.split(".")[-1].replace("?d=true", "")
         data = re.search(r"\[ANi\] (.+) - (.+) \[.+\]\[(.+)\]\[.+\]\[.+\]\[.+\]\..+", file_name)
         season_name = data.group(1).replace("（僅限港澳台地區）", "")
-        volume = data.group(2)
+        volume = int(data.group(2)) if data.group(2).isdigit() else 1
         platform = data.group(3)
         url = urllib.parse.quote(url, safe=":/?&=")
     elif re.search(r"(abema\.tv\/video\/episode\/)", _url):
@@ -59,7 +59,7 @@ async def nc_msg_down(message: Message, bot: AsyncTeleBot):
     data = re.search(r"\[.+\] (.+) - (.+) \((.+) ([0-9]+x[0-9]+).+\)", file_name)
     if not data: return await bot.reply_to(message, f"无法解析此信息 {file_name}")
     season_name = data.group(1)
-    volume = data.group(2)
+    volume = int(data.group(2)) if data.group(2).isdigit() else 1
     platform = data.group(3)
     url = urllib.parse.quote(url, safe=":/?&=").replace("mkv", "zip").replace("mp4", "zip")
     tag_name = re.search(r"#(.+?)\n\n", message.html_caption).group(1)

@@ -9,6 +9,7 @@ from .list import add_white, now_white
 from .renfo import re_subject_nfo
 from .sub import file_sub, send_sub
 from .subscribe import subscribe
+from .sendmsg import send_messsge, async_send_messsge
 
 
 def bot_register(bot: AsyncTeleBot):
