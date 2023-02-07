@@ -13,10 +13,10 @@ async def async_send_messsge(bot, bgm_id, video_name):
     markup.add(InlineKeyboardButton('退订通知', url=f"tg://resolve?domain={config['bot_username']}&start=unsubscribe-{bgm_id}"))
     subscribe_list = sql.inquiry_subscribe_alluser(bgm_id)
     if subscribe_list:
-        for users in subscribe_list:
-            for user in users:
-                await bot.send_message(user, f"[#更新提醒] {video_name} 更新咯～", reply_markup=markup)
-            await asyncio.sleep(1)
+        for i, user in enumerate(subscribe_list):
+            await bot.send_message(user, f"[#更新提醒] {video_name} 更新咯～", reply_markup=markup)
+            if (i + 1) % 30 == 0:
+                await asyncio.sleep(1)
     # 发送更新提醒 (频道)
     markupp = InlineKeyboardMarkup()
     markupp.add(
@@ -33,10 +33,10 @@ def send_messsge(bot, bgm_id, video_name):
     markup.add(InlineKeyboardButton('退订通知', url=f"tg://resolve?domain={config['bot_username']}&start=unsubscribe-{bgm_id}"))
     subscribe_list = sql.inquiry_subscribe_alluser(bgm_id)
     if subscribe_list:
-        for users in subscribe_list:
-            for user in users:
-                bot.send_message(user, f"[#更新提醒] {video_name} 更新咯～", reply_markup=markup)
-            time.sleep(1)
+        for i, user in enumerate(subscribe_list):
+            bot.send_message(user, f"[#更新提醒] {video_name} 更新咯～", reply_markup=markup)
+            if (i + 1) % 30 == 0:
+                time.sleep(1)
     # 发送更新提醒 (频道)
     markupp = InlineKeyboardMarkup()
     markupp.add(

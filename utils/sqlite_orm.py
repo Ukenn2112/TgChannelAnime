@@ -1,7 +1,5 @@
 import sqlite3
 
-from more_itertools import chunked
-
 
 class SQLite:
     def __init__(self):
@@ -49,7 +47,7 @@ class SQLite:
         """使用 bgm_id 查询所有订阅用户"""
         data = self.cursor.execute(f"SELECT tg_id FROM Subscribe WHERE bgm_id = {bgm_id}").fetchall()
         if data:
-            return chunked([i[0] for i in data], 30)
+            return [i[0] for i in data]
         else:
             return []
     
