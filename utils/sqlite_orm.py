@@ -80,9 +80,9 @@ class SQLite:
     
     def inquiry_abema(self, sid) -> list:
         """使用 sid 查询"""
-        data = self.cursor.execute(f"SELECT down_eid FROM Abema WHERE sid = '{sid}'").fetchone()
+        data = self.cursor.execute(f"SELECT down_eid FROM Abema WHERE sid = '{sid}'").fetchall()
         if data:
-            return data
+            return [d[0] for d in data]
         else:
             return []
     

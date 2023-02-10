@@ -49,7 +49,7 @@ async def abema_worker(sid: str, bgm_id, tmdb_d = None, eid = None):
         elif i["id"] not in is_downs:
             await queue.put((
                 "https://abema.tv/video/episode/" + i['id'], i['series']['title'], "mp4", 
-                i['episode']['number'], "Abema", bgm_id
+                i['episode']['number'], "Abema", bgm_id, tmdb_d
                 ))
 
 
