@@ -73,7 +73,7 @@
 /sentai [add/del] [白名单] 解释同上
 
 /abema [add/del] [Note/Abema SeasonId/BGM ID/week(1~7)/time(00:00~23:59)] 
-添加需要 备注 和 Abema SeasonId 和 BGM ID 使用 如 不当哥哥/19-149/378862 删除只需要 SeasonId
+添加需要 备注 和 Abema SeasonId 和 BGM ID 使用 如 不当哥哥/19-149/378862/5/0:30(服务器当地时区) 删除只需要 SeasonId
 
 /bgmcom [add/del] [白名单/BGM ID] BGM ID 对照表
 
