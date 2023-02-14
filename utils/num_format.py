@@ -14,3 +14,4 @@ async def volume_format(volume: str) -> Union[int, float]:
             volume = 1
     except:
         volume = 1
+    return volume
