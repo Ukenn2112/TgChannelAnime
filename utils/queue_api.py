@@ -13,6 +13,7 @@ from waitress import serve
 from utils.bgm_nfo import episode_nfo, save_nfo, subject_name, subject_nfo
 from utils.bot import send_messsge
 from utils.global_vars import config, sql
+from utils.num_format import volume_format
 
 bot = TeleBot(config["bot_token"])
 # 异步线程池
@@ -45,7 +46,7 @@ def send_nfo(season_name, volume, bgm_id, tmdb_d):
 
 
 async def nfo_send(season_name, volume: str, bgm_id, tmdb_d):
-    volume = int(volume) if volume.isdigit() else 1
+    volume = await volume_format(volume)
     try:
         up_folder_name = sql.inquiry_name_ja(bgm_id)
         if not up_folder_name:

@@ -6,6 +6,7 @@ import logging
 import os
 import re
 import shutil
+from typing import Union
 
 from utils.abema import abema_download
 from utils.bgm_nfo import episode_nfo, subject_name, subject_nfo, save_nfo
@@ -40,7 +41,7 @@ async def down_worker(name):
         url: str = queue_item[0]
         season_name: str = queue_item[1]
         file_type: str = queue_item[2]
-        volume: int = queue_item[3]
+        volume: Union[int, float] = queue_item[3]
         platform: str = queue_item[4]
         bgm_id: str = queue_item[5]
         # 如果没有获得到 TMDB，则为 None
@@ -62,8 +63,15 @@ async def down_worker(name):
                 season = re.search(r"Season(.*)", up_folder_name)
                 if season: up_folder_name = up_folder_name.replace(season.group(0), "").strip()
                 sql.insert_data(bgm_id, tmdb_d, season_name, up_folder_name)
+        if isinstance(volume, int):
+            volume = f"{volume:02d}"
+            episode_type: int = 0
+        elif isinstance(volume, float):
+            episode_type: int = 1
+        else:
+            episode_type: int = 0
         # 拼接视频名称以及临时下载目录名称
-        video_name = f"{season_name} - S01E{volume:02d} - {platform}"
+        video_name = f"{season_name} - S01E{volume} - {platform}"
         worker_path = f"{config['save_path']}{video_name}"
         # 创建临时下载目录
         if not os.path.exists(worker_path):
@@ -78,7 +86,7 @@ async def down_worker(name):
             dirs = [dirs["Name"] for dirs in dirs_list if up_folder_name in dirs["Name"]]
             # 生成 NFO 文件
             subject_data = subject_nfo(bgm_id, tmdb_d) if not dirs else None
-            episode_data = episode_nfo(bgm_id, volume)
+            episode_data = episode_nfo(bgm_id, volume, episode_type)
             save_nfo(worker_path, video_name, subject_data, episode_data)
         except Exception as e:
             logging.error(f"[video_name: {video_name}] - 生成 NFO 数据出错: {e}")

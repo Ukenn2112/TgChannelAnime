@@ -5,7 +5,8 @@ import urllib.parse
 
 from telethon import events
 
-from utils.global_vars import bot, config, queue, client
+from utils.global_vars import bot, client, config, queue
+from utils.num_format import volume_format
 
 
 @events.register(events.NewMessage(chats=config["nc_chat_id"]))
@@ -33,7 +34,7 @@ async def nc_chat_detecting(update):
                 f"\\[#出错啦]\n - 文件名无法解析 `{file_name}`\nMessage: [{message.id}](https://t.me/c/{config['nc_chat_id']}/{message.id})", parse_mode="Markdown")
             return logging.error(f"[message_id: {message.id}] - {file_name} 无法解析的消息")
         season_name = data.group(1)
-        volume = int(data.group(2)) if data.group(2).isdigit() else 1
+        volume = await volume_format(data.group(2))
         platform = data.group(3)
 
         tag_name = re.search(r"\n\n#(.+)\n\n", message.text).group(1)
@@ -77,7 +78,7 @@ async def ani_chat_detecting(update):
                 f"\\[#出错啦]\n - 文件名无法解析 `{file_name}`\nMessage: [{message.id}](https://t.me/c/{config['ani_chat_id']}/{message.id})", parse_mode="Markdown")
             return logging.error(f"[message_id: {message.id}] - {file_name} 无法解析的消息")
         season_name = data.group(1).replace("（僅限港澳台地區）", "")
-        volume = int(data.group(2)) if data.group(2).isdigit() else 1
+        volume = await volume_format(data.group(2))
         platform = data.group(3)
 
         tag_name = re.search(r"#新番更新  #(.+?)\n", message.text).group(1)

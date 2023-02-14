@@ -1,5 +1,5 @@
 import logging
-import os
+from typing import Union
 
 import cairosvg
 import requests
@@ -160,7 +160,7 @@ def subject_nfo(subject_id, tmdb_d: str = None) -> dict:
     }
 
 
-def episode_nfo(subject_id, num: int, _type = 0) -> str:
+def episode_nfo(subject_id, num: Union[int, float], _type = 0) -> str:
     """Bangumi Episode ID 生成 NFO 内容
     :param subject_id: Bangumi Subject ID
     :param num: 第几集
@@ -243,7 +243,7 @@ def get_tmdb_images(tmdb_id, _type = 'tv') -> dict:
     r.raise_for_status()
     return r.json()
 
-def get_bgm_episode(subject_id, num: int, _type = 0) -> dict:
+def get_bgm_episode(subject_id, num: Union[int, float], _type = 0) -> dict:
     """请求 Bangumi API 获取剧集信息
     :param subject_id: Bangumi Subject ID
     :param num: 第几集
