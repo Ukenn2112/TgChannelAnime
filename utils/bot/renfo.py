@@ -13,13 +13,15 @@ from utils.global_vars import config
 
 async def re_subject_nfo(message: Message, bot: AsyncTeleBot):
     data = message.text.split(" ")
-    if len(data) < 4:
+    if len(data) <= 1:
         return await bot.reply_to(message, "参数错误")
     elif not data[1].isdecimal():
         return await bot.reply_to(message, "参数错误")
     bgm_id = data[1]
-    tmdb_id = data[2]
-    tmdb_type = data[3]
+    tmdb_id, tmdb_type = None, None
+    if len(data) > 3:
+        tmdb_id = data[2]
+        tmdb_type = data[3]
     msg = await bot.reply_to(message, "收到重新生成 NFO 请求，开始处理...")
     up_folder_name = subject_name(bgm_id)
     season = re.search(r"Season(.*)", up_folder_name)
@@ -27,12 +29,13 @@ async def re_subject_nfo(message: Message, bot: AsyncTeleBot):
     worker_path = f"{config['save_path']}{up_folder_name}_nfo"
     if not os.path.exists(worker_path): os.mkdir(worker_path)
     # 生成 Season NFO
-    try:
-        subject_data = subject_nfo(bgm_id, tmdb_type + '/' + tmdb_id)
-        save_nfo(worker_path, subject_data=subject_data)
-    except Exception as e:
-        return await bot.reply_to(message, f"获取生成 Season NFO 数据失败:\n\n{e}")
-    await bot.edit_message_text("已生成 Season NFO 文件，正在开始生成 Episode NFO...", message.chat.id, msg.message_id)
+    if tmdb_id and tmdb_type:
+        try:
+            subject_data = subject_nfo(bgm_id, tmdb_type + '/' + tmdb_id)
+            save_nfo(worker_path, subject_data=subject_data)
+        except Exception as e:
+            return await bot.reply_to(message, f"获取生成 Season NFO 数据失败:\n\n{e}")
+        await bot.edit_message_text("已生成 Season NFO 文件，正在开始生成 Episode NFO...", message.chat.id, msg.message_id)
     try:
         proc = await asyncio.create_subprocess_exec(
             "rclone", "lsjson", f"{config['rclone_config_name']}:NC-Raws/{up_folder_name}",
