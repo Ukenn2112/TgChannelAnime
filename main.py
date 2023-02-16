@@ -64,14 +64,13 @@ async def down_worker(name):
                 if season: up_folder_name = up_folder_name.replace(season.group(0), "").strip()
                 sql.insert_data(bgm_id, tmdb_d, season_name, up_folder_name)
         if isinstance(volume, int):
-            volume = f"{volume:02d}"
+            _volume = f"{volume:02d}"
             episode_type: int = 0
         elif isinstance(volume, float):
+            _volume = volume
             episode_type: int = 1
-        else:
-            episode_type: int = 0
         # 拼接视频名称以及临时下载目录名称
-        video_name = f"{season_name} - S01E{volume} - {platform}"
+        video_name = f"{season_name} - S01E{_volume} - {platform}"
         worker_path = f"{config['save_path']}{video_name}"
         # 创建临时下载目录
         if not os.path.exists(worker_path):
