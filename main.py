@@ -100,6 +100,7 @@ async def down_worker(name):
                     download(url, f"{worker_path}/{video_name}.{file_type}")
             except Exception as e:
                 if chat_msg_id:
+                    logging.warning(f"[video_name: {video_name}] - 下载失败，正在尝试从频道下载: {e}")
                     await bot.send_message(config["notice_chat"],
                         f"\\[#报告] `{bgm_id}`\n - {video_name}\n\nNC Drive 下载失败，正在尝试从频道下载", parse_mode="Markdown")
                     chat_msg = await client.get_messages(config["nc_chat_id"], ids=chat_msg_id)

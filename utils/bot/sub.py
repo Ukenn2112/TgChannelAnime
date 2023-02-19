@@ -1,6 +1,7 @@
 import asyncio
 import json
 import re
+import logging
 
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import ForceReply, Message
@@ -40,6 +41,7 @@ async def send_sub(message: Message, bot: AsyncTeleBot):
     if sub_data is None:
         return await bot.reply_to(message, "未找到可获取文件, 请从头开始")
     msg = await bot.reply_to(message, "正在处理, 请稍后...")
+    logging.info(f"[Bot] 收到来自 {message.from_user.id} 的字幕处理请求 BGM ID: {msg_data[0]}, 集数: {msg_data[1]}")
     try:
         folder_name = subject_name(msg_data[0])
         season = re.search(r"Season(.*)", folder_name)

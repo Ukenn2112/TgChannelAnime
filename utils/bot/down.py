@@ -1,5 +1,6 @@
 import base64
 import re
+import logging
 import urllib.parse
 
 from telebot.async_telebot import AsyncTeleBot
@@ -37,6 +38,7 @@ async def url_down(message: Message, bot: AsyncTeleBot):
     else:
         return await bot.reply_to(message, "错误的链接")
     await bot.reply_to(message, "已加入队列")
+    logging.info(f"[Bot] 收到来自 {message.from_user.id} 的任务 {season_name} {volume}")
     await queue.put((url, season_name, file_type, volume, platform, bgm_id, tmdb_d))
 
 
@@ -69,4 +71,5 @@ async def nc_msg_down(message: Message, bot: AsyncTeleBot):
             bgm_id = bid["bgmid"]
             break
     await bot.reply_to(message, "已加入队列")
+    logging.info(f"[Bot] 收到来自 {message.from_user.id} 的任务 {season_name} {volume}")
     await queue.put((url, season_name, file_type, volume, platform, bgm_id, tmdb_d, message.forward_from_message_id))

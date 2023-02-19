@@ -3,6 +3,7 @@ import os
 import re
 import shutil
 import json
+import logging
 
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import Message
@@ -22,6 +23,7 @@ async def re_subject_nfo(message: Message, bot: AsyncTeleBot):
     if len(data) > 3:
         tmdb_id = data[2]
         tmdb_type = data[3]
+    logging.info(f"[Bot] 收到来自 {message.from_user.id} 的重新生成 NFO 请求 {bgm_id}")
     msg = await bot.reply_to(message, "收到重新生成 NFO 请求，开始处理...")
     up_folder_name = subject_name(bgm_id)
     season = re.search(r"Season(.*)", up_folder_name)

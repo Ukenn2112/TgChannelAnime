@@ -88,6 +88,7 @@ async def add_white(message: Message, bot: AsyncTeleBot):
         logging.info("已重新设置定时任务")
     with open("data/config.json", "w", encoding="utf-8") as f:
         json.dump(config, f, indent=4, ensure_ascii=False)
+    logging.info(f"[Bot] 收到来自 {message.from_user.id} 的名单修改请求 {message.text}")
     await bot.reply_to(message, (
         "*修改成功 现在名单状况*\n\n"
         "*Baha 黑名单*: \n\n`" + '\n'.join(config['Baha_blacklist']) + "`\n\n"
