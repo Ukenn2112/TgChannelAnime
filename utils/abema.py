@@ -44,7 +44,7 @@ async def abema_worker(sid: str, bgm_id, tmdb_d = None, eid = None):
                     i['episode']['number'], "Abema", bgm_id, tmdb_d
                     ))
     for i in info_data.json()["programs"]:
-        if int(i["id"].split("_p")[-1]) > 500:
+        if int(i["id"].split("_p")[-1]) >= 500:
             continue
         elif i["id"] not in is_downs:
             await queue.put((
