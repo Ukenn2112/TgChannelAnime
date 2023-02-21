@@ -29,6 +29,7 @@
     "bot_token": "591xxxxx37:Axxxxxxx25kUiAcY", # Bot 密钥
     "bgm_token": "", bgm_token https://next.bgm.tv/demo/access-token 生成一个最长时间密钥
     "tmdb_token": "xxx", tmdb api token
+    "finish_url": "完成后所需要执行的 POST 请求，不需要请将此删除",
     "abema_username": "xxx", # abema 账号 （无需求可不填写）
     "abema_password": "xxx", # abema 密码 （无需求可不填写）
     "abema_barer": "xxx", # abema 认证头 （无需求可不填写）

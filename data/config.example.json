@@ -5,6 +5,7 @@
     "bot_token": "591xxxxx37:Axxxxxxx25kUiAcY",
     "bgm_token": "https://next.bgm.tv/demo/access-token",
     "tmdb_token": "xxx",
+    "finish_url": "完成后所需要执行的 POST 请求，不需要请将此删除",
     "abema_username": "xxx",
     "abema_password": "xxx",
     "abema_barer": "xxx",

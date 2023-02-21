@@ -8,14 +8,15 @@ import re
 import shutil
 from typing import Union
 
+from requests import post
+
 from utils.abema import abema_download
-from utils.bgm_nfo import episode_nfo, subject_name, subject_nfo, save_nfo
-from utils.bot import bot_register, async_send_messsge
+from utils.bgm_nfo import episode_nfo, save_nfo, subject_name, subject_nfo
+from utils.bot import async_send_messsge, bot_register
 from utils.download import download
 from utils.global_vars import bot, client, config, queue, sql
 from utils.msg_events import ani_chat_detecting, nc_chat_detecting, nc_group_detecting
 from utils.schedule_orm import run_schedule, set_schedule
-from utils.queue_api import start_api, stop_api
 
 logging.getLogger().setLevel(logging.INFO)
 logging.basicConfig(
@@ -116,6 +117,8 @@ async def down_worker(name):
             await proc.wait()
             if proc.returncode == 0:
                 await async_send_messsge(bot, bgm_id, video_name)
+                if config["finish_url"]:
+                    post(config["finish_url"])
                 logging.info(f"[video_name: {video_name}] - 已下载并上传成功")
         except Exception as e:
             logging.error(f"[video_name: {video_name}] - 下载或上传失败: {e}")
