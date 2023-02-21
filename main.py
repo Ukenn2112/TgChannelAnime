@@ -17,6 +17,7 @@ from utils.download import download
 from utils.global_vars import bot, client, config, queue, sql
 from utils.msg_events import ani_chat_detecting, nc_chat_detecting, nc_group_detecting
 from utils.schedule_orm import run_schedule, set_schedule
+from utils.queue_api import start_api, stop_api
 
 logging.getLogger().setLevel(logging.INFO)
 logging.basicConfig(
