@@ -27,6 +27,14 @@ class SQLite:
         else:
             return ""
 
+    def inquiry_all_season(self) -> list:
+        """查询所有数据"""
+        data = self.cursor.execute(f"SELECT bgm_id, tmdb_d, name_ja FROM Season").fetchall()
+        if data:
+            return data
+        else:
+            return []
+
     def insert_data(self, bgm_id, tmdb_d, name_file, name_ja):
         """添加剧集数据"""
         self.cursor.execute(f"INSERT INTO Season (bgm_id, tmdb_d, name_file, name_ja) VALUES ({bgm_id}, '{tmdb_d}', '{name_file}', '{name_ja}')")
