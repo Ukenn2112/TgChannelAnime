@@ -10,6 +10,7 @@ from telebot.types import Message
 
 from utils.bgm_nfo import episode_nfo, save_nfo, subject_name, subject_nfo
 from utils.global_vars import config, sql
+from utils.num_format import volume_format
 
 
 async def re_subject_nfo(message: Message, bot: AsyncTeleBot):
@@ -54,7 +55,12 @@ async def re_subject_nfo(message: Message, bot: AsyncTeleBot):
         if dirs_list:
             for video in dirs_list:
                 try:
-                    episode_data = episode_nfo(bgm_id, int(video.split(' - ')[1].split('E')[1]))
+                    volume = await volume_format(video.split(' - ')[1].split('E')[1])
+                    if isinstance(volume, int):
+                        episode_type: int = 0
+                    elif isinstance(volume, float):
+                        episode_type: float = 1
+                    episode_data = episode_nfo(bgm_id, volume, episode_type)
                     save_nfo(worker_path, episode_data=episode_data, video_name=video.split('.')[0])
                 except Exception as e:
                     return await bot.reply_to(message, f"[{i+1}/{todo_num}] 读取文件列表失败: 获取生成 Episode NFO 数据出错或命名错误\n\n{e}")
