@@ -89,7 +89,7 @@ async def ani_chat_detecting(update):
                 bgm_id = w['bgmid']
                 break
         if not bgm_id: return
-        await queue.put((url.group(1), season_name, file_type, volume, platform, bgm_id))
+        await queue.put((url.group(1), season_name, file_type, volume, platform, bgm_id, None, message.id))
 
 
 @events.register(events.NewMessage(chats=config["nc_group_id"]))
