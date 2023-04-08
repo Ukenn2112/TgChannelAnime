@@ -14,6 +14,7 @@ async def help_message(message: Message, bot: AsyncTeleBot):
         "`/bgmcom [add/del] [白名单/BGM ID]` BGM ID 对照表\n\n"
         "`/admin [add/del] [白名单]` 解释同上\n\n"
         "`/now_white` 获取现在的白名单\n\n"
+        "`/clear` 清空名单\n\n"
         "`/url <bgmid> <tv|movie/tmdbid(可选)> <url>` url Ani/Abema 的下载链接\n\n"
         "下载 NC-Raws 的视频直接转发频道消息即可\n\n"
         "`/re_nfo <bgmid> {<tmdbid> [tv/movie] (可选)}` 重新生成剧集 NFO 如果tmdb相关数据不填写则跳过 Season NFO 的生成\n\n"

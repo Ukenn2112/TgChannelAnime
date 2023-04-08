@@ -18,7 +18,7 @@ def bot_register(bot: AsyncTeleBot):
     bot.register_message_handler(nc_msg_down, chat_types=["private"], content_types=['video'], pass_bot=True, is_admin=True)
     bot.register_message_handler(file_sub, chat_types=["private"], content_types=['document'], pass_bot=True, is_admin=True)
     bot.register_message_handler(send_sub, func=lambda m: m.reply_to_message is not None, regexp=r"[0-9]+ [0-9]+", chat_types=["private"], content_types=['text'], pass_bot=True, is_admin=True)
-    bot.register_message_handler(add_white, commands=["baha", "b_global", "bilibili", "cr", "sentai", "admin", "bgmcom", "abema"], chat_types=["private"], pass_bot=True, is_admin=True)
+    bot.register_message_handler(add_white, commands=["baha", "b_global", "bilibili", "cr", "sentai", "admin", "bgmcom", "abema", "clear"], chat_types=["private"], pass_bot=True, is_admin=True)
     bot.register_message_handler(now_white, commands=["now_white"], chat_types=["private"], pass_bot=True, is_admin=True)
     bot.register_message_handler(url_down, commands=["url"], chat_types=["private"], pass_bot=True, is_admin=True)
     bot.register_message_handler(help_message, commands=["help"], chat_types=["private"], pass_bot=True, is_admin=True)

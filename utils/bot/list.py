@@ -10,7 +10,20 @@ from utils.schedule_orm import clear_schedule, set_schedule
 
 async def add_white(message: Message, bot: AsyncTeleBot):
     data = message.text.split(" ")
-    if len(data) < 3:
+    if message.text.startswith("/clear"):
+        if message.text == "/clear yes":
+            config["Baha_blacklist"] = []
+            config["B_Global_whitelist"] = []
+            config["Bilibili_whitelist"] = []
+            config["CR_whitelist"] = []
+            config["Sentai_whitelist"] = []
+            config["bgm_compare"] = []
+            config["abema_list"] = []
+            clear_schedule()
+            logging.info("已清空名单")
+        else:
+            return await bot.reply_to(message, "⚠️请确认是否清空名单，此操作不可逆！\n\n发送 `/clear yes` 确定清除", parse_mode="MarkdownV2")
+    elif len(data) < 3:
         return await bot.reply_to(message, "参数错误")
     elif message.text.startswith("/baha"):
         if data[1] == "add":
