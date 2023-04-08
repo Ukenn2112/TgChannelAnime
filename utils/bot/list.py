@@ -20,6 +20,7 @@ async def add_white(message: Message, bot: AsyncTeleBot):
             config["bgm_compare"] = []
             config["abema_list"] = []
             clear_schedule()
+            set_schedule()
             logging.info("已清空名单")
         else:
             return await bot.reply_to(message, "⚠️请确认是否清空名单，此操作不可逆！\n\n发送 `/clear yes` 确定清除", parse_mode="MarkdownV2")

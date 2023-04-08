@@ -1,5 +1,5 @@
 import sqlite3
-
+from datetime import datetime
 
 class SQLite:
     def __init__(self):
@@ -15,8 +15,13 @@ class SQLite:
             bgm_id INTEGER UNIQUE,
             tmdb_d VARCHAR(255),
             name_file VARCHAR(255),
-            name_ja VARCHAR(255))
+            name_ja VARCHAR(255),
+            update_time TIMESTAMP)
             """)
+        try:
+            self.cursor.execute(f"ALTER TABLE Season ADD COLUMN update_time TIMESTAMP DEFAULT {datetime.now().timestamp() // 1000}")
+        except Exception:
+            pass
         self.conn.commit()
 
     def inquiry_name_ja(self, bgm_id) -> str:
@@ -27,9 +32,14 @@ class SQLite:
         else:
             return ""
 
+    def update_time(self, bgm_id):
+        """更新更新时间"""
+        self.cursor.execute(f"UPDATE Season SET update_time = {datetime.now().timestamp() // 1000} WHERE bgm_id = {bgm_id}")
+        self.conn.commit()
+
     def inquiry_all_season(self) -> list:
         """查询所有数据"""
-        data = self.cursor.execute(f"SELECT bgm_id, tmdb_d, name_ja FROM Season").fetchall()
+        data = self.cursor.execute(f"SELECT bgm_id, tmdb_d, name_ja, update_time FROM Season").fetchall()
         if data:
             return data
         else:
@@ -37,7 +47,12 @@ class SQLite:
 
     def insert_data(self, bgm_id, tmdb_d, name_file, name_ja):
         """添加剧集数据"""
-        self.cursor.execute(f"INSERT INTO Season (bgm_id, tmdb_d, name_file, name_ja) VALUES ({bgm_id}, '{tmdb_d}', '{name_file}', '{name_ja}')")
+        self.cursor.execute(f"INSERT INTO Season (bgm_id, tmdb_d, name_file, name_ja, update_time) VALUES ({bgm_id}, '{tmdb_d}', '{name_file}', '{name_ja}', {datetime.now().timestamp() // 1000})")
+        self.conn.commit()
+
+    def delete_season_data(self, bgm_id):
+        """删除剧集数据"""
+        self.cursor.execute(f"DELETE FROM Season WHERE bgm_id = {bgm_id}")
         self.conn.commit()
 
 ###### 订阅数据库操作 ######

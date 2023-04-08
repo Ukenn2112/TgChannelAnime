@@ -4,11 +4,13 @@ import logging
 import schedule
 
 from utils.abema import abema_worker
+from utils.old_disposal import old_anime_disposal
 from utils.global_vars import config
 
 
 def set_schedule():
     """设置定时任务"""
+    schedule.every().wednesday.at("08:00").do(async_function_old_anime_disposal)
     for ab in config["abema_list"]:
         if ab["week"] == "1":
             schedule.every().monday.at(ab["time"]).do(
@@ -36,6 +38,11 @@ def set_schedule():
 def async_function(sid, bgmid):
     loop = asyncio.get_event_loop()
     loop.create_task(abema_worker(sid, bgmid))
+
+
+def async_function_old_anime_disposal():
+    loop = asyncio.get_event_loop()
+    loop.create_task(old_anime_disposal())
 
 
 def clear_schedule():

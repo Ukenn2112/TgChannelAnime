@@ -65,6 +65,8 @@ async def down_worker(name):
                 season = re.search(r"Season(.*)", up_folder_name)
                 if season: up_folder_name = up_folder_name.replace(season.group(0), "").strip()
                 sql.insert_data(bgm_id, tmdb_d, season_name, up_folder_name)
+            else:
+                sql.update_time(bgm_id)
         if isinstance(volume, int):
             _volume = f"{volume:02d}"
             episode_type: int = 0
