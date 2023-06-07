@@ -59,7 +59,7 @@ async def nc_msg_down(message: Message, bot: AsyncTeleBot):
     url = "https://" + url[2] + base64.b64decode(url[-1].replace("_", "/").replace("-", "+")).decode("utf-8")
     file_name = url.split("/")[-1]
     file_type = file_name.split(".")[-1]
-    data = re.search(r"\[.+\]|【.+】 (.+) - (.+) \((.+) ([0-9]+x[0-9]+).+\)", file_name)
+    data = re.search(r"\[.+\] (.+) - (.+) \((.+) ([0-9]+x[0-9]+).+\)", file_name)
     if not data: return await bot.reply_to(message, f"无法解析此信息 {file_name}")
     season_name = data.group(1)
     volume = await volume_format(data.group(2))

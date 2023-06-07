@@ -28,7 +28,7 @@ async def nc_chat_detecting(update):
             tmdb_d = tmdb_d.group(1)
         file_name = url.split("/")[-1]
         file_type = file_name.split(".")[-1]
-        data = re.search(r"\[.+\]|【.+】 (.+) - (.+) \((.+) ([0-9]+x[0-9]+).+\)", file_name)
+        data = re.search(r"\[.+\] (.+) - (.+) \((.+) ([0-9]+x[0-9]+).+\)", file_name)
         if not data:
             await bot.send_message(config["notice_chat"],
                 f"\\[#出错啦]\n - 文件名无法解析 `{file_name}`\nMessage: [{message.id}](https://t.me/c/{config['nc_chat_id']}/{message.id})", parse_mode="Markdown")
