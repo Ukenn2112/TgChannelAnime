@@ -28,7 +28,7 @@ async def nc_chat_detecting(update):
             tmdb_d = tmdb_d.group(1)
         file_name = url.split("/")[-1]
         file_type = file_name.split(".")[-1]
-        data = re.search(r"\[.+\] (.+) - (.+) \((.+) ([0-9]+x[0-9]+).+\)", file_name)
+        data = re.search(r"\[.+\] (.+) - (.+) \((.+) ([0-9]+x[0-9]+).+\)", file_name) # 文件名正则匹配
         if not data:
             await bot.send_message(config["notice_chat"],
                 f"\\[#出错啦]\n - 文件名无法解析 `{file_name}`\nMessage: [{message.id}](https://t.me/c/{config['nc_chat_id']}/{message.id})", parse_mode="Markdown")
@@ -36,6 +36,10 @@ async def nc_chat_detecting(update):
         season_name = data.group(1)
         volume = await volume_format(data.group(2))
         platform = data.group(3)
+        if season_name is None or volume is None or platform is None:
+            await bot.send_message(config["notice_chat"],
+                f"\\[#出错啦]\n - 文件名无法解析 `{file_name}`\nMessage: [{message.id}](https://t.me/c/{config['nc_chat_id']}/{message.id})", parse_mode="Markdown")
+            return logging.error(f"[message_id: {message.id}] - {file_name} 无法解析的消息")
 
         tag_name = re.search(r"\n\n#(.+)\n\n", message.text).group(1)
         for bid in config["bgm_compare"]:
