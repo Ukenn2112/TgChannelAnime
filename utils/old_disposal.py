@@ -10,7 +10,7 @@ async def old_anime_disposal():
     data = sql.inquiry_all_season()
     now_time = datetime.now() - timedelta(weeks=7) // 1000
     for i in data:
-        if now_time > i[3]:
+        if int(now_time) > i[3]:
             logging.info(f"检测到过时番剧 {i[0]}，开始处理...")
             try:
                 proc = await asyncio.create_subprocess_exec(
