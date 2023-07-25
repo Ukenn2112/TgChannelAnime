@@ -16,6 +16,8 @@ async def nc_chat_detecting(update):
         url = re.search(r"\[线上观看&下载\]\((https?:\/\/.+\.raws\.dev\/[0-9]+:video\/.+?)\)", message.text)
         bgm_id = re.search(r"https?:\/\/bgm\.tv\/subject\/([0-9]+)", message.text)
         if not url or not bgm_id:
+            if "bgm.tv" in message.text:
+                return logging.info(f"[message_id: {message.id}] - 无法解析 BGM ID 跳过")
             await bot.send_message(config["notice_chat"],
                 f"\\[#出错啦]\n - NC 频道发送了一条无法解析的消息\nMessage: [{message.id}](https://t.me/c/{config['nc_chat_id']}/{message.id})", parse_mode="Markdown")
             return logging.error(f"[message_id: {message.id}] - 无法解析的消息")
